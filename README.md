@@ -25,13 +25,12 @@ url: http://antongerdelan.net/opengl/
 
 注意要点:
 
-t
+    t
+    t
 
-t
+'t'
 
-t
-
-t
+`t`
 
 
 PS 1.附上Readme添加icon方法:
@@ -51,3 +50,5 @@ PS 2.Readme字体格式等方法:
 a. 参考内容:
 
 https://github.com/guodongxiaren/README#%E6%96%87%E6%9C%AC
+
+https://github.com/EyreFree/EFArticles/blob/master/README.md
