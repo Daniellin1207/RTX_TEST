@@ -34,14 +34,22 @@ t
 t
 
 
-PS.附上Readme添加icon方法:
+PS 1.附上Readme添加icon方法:
 
-1.生成icon地址: https://shields.io/
+a.生成icon地址: https://shields.io/
 
-2.格式为(中间无空格):   ! [] (url)
+b.格式为(中间无空格):   ! [] (url)
 
-3.参考内容: 
+c.参考内容: 
 
 https://lpd-ios.github.io/2017/05/03/GitHub-Badge-Introduction/
 
+https://github.com/EyreFree/EFArticles
+
+PS 2.Readme字体格式等方法:
+
+a. 参考内容:
+
+https://github.com/guodongxiaren/README#%E6%96%87%E6%9C%AC
+https://github.com/EyreFree/EFArticles字体
 https://github.com/EyreFree/EFArticles
