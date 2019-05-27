@@ -8,8 +8,8 @@
     
 **使用库包:**  
 
-    ![](https://img.shields.io/badge/language-C%2B%2B-green.svg)  
-    ![](https://img.shields.io/badge/language-Opengl-redgreen.svg)  
+![](https://img.shields.io/badge/language-C%2B%2B-green.svg) 
+![](https://img.shields.io/badge/language-Opengl-redgreen.svg)  
     
 **参考内容:**  
 
