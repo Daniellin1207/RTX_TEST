@@ -17,6 +17,9 @@ void processInput(GLFWwindow *window);
 const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
 
+float ratio=0.0f;
+float zoom=0.01f;
+
 int main()
 {
     // glfw: initialize and configure
@@ -52,11 +55,11 @@ int main()
     // set up vertex data (and buffer(s)) and configure vertex attributes
     // ------------------------------------------------------------------
     float vertices[] = {
-        //     ---- 位置 ----       ---- 颜色 ----     - 纹理坐标 -
-        0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f,   // 右上
-        0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f,   // 右下
-        -0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f,   // 左下
-        -0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f    // 左上
+        // positions          // colors           // texture coords (note that we changed them to 2.0f!)
+        0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   2.0f, 2.0f, // top right
+        0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f,   2.0f, 0.0f, // bottom right
+        -0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f, // bottom left
+        -0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 2.0f  // top left
     };
     int indices[]={
         0,1,2,
@@ -104,6 +107,11 @@ int main()
         std::cout << "Failed to load texture" << std::endl;
     }
     stbi_image_free(data);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE); // note that we set the container wrapping method to GL_CLAMP_TO_EDGE
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    // set texture filtering parameters
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     
     stbi_set_flip_vertically_on_load(true);
     unsigned char *data1 = stbi_load("/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/Textures/awesomeface.png", &width, &height, &nrChannels, 0);
@@ -139,6 +147,7 @@ int main()
         ourShader.use();
         glUniform1i(glGetUniformLocation(ourShader.ID,"ourTexture1"),0);
         glUniform1i(glGetUniformLocation(ourShader.ID,"ourTexture2"),1);
+        glUniform1f(glGetUniformLocation(ourShader.ID,"ratio"),ratio);
         
         glBindVertexArray(VAO);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
@@ -164,6 +173,13 @@ void processInput(GLFWwindow *window)
 {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
+    if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
+        if(ratio<1.0)
+            ratio+=0.1*zoom;
+    if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
+        if(ratio>0.0)
+            ratio-=0.1*zoom;
+    
 }
 
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes
