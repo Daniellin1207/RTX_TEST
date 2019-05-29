@@ -20,7 +20,11 @@ struct Material{
 
 struct Light{
     vec3 position;
-//    vec3 direction;
+    vec3 direction;
+    
+    float cutoff;
+    float cutout;
+    
     vec3 ambient;
     vec3 diffuse;
     vec3 specular;
@@ -46,21 +50,52 @@ void main()
     vec3 norm=normalize(normal);
     
     vec3 lightDir=normalize(light.position-pos);
-    float r=max(dot(lightDir,normal),0.0);
-    vec3 diffuse=r*light.diffuse*texture(material.diffuse,tex).rgb;
+    float theta=dot(lightDir,normalize(-light.direction));
+    
+    if(theta>light.cutoff){
+        float r=max(dot(lightDir,normal),0.0);
+        vec3 diffuse=r*light.diffuse*texture(material.diffuse,tex).rgb;
+        
+        
+        vec3 viewDir=normalize(viewPos-pos);
+        //    vec3 n=normalize(viewDir+lightDir);
+        //    float t=max(dot(n,norm),0.0);
+        float t=pow(max(dot(reflect(-lightDir,norm),viewDir),0.0),material.shininess); // reflect(I,N)=>> I-2cos(I,N)*N ==>>so need "-"
+        vec3 specular=t*light.specular*texture(material.specular,tex).rgb;
+        
+        
+        
+        vec3 result=specular+diffuse;
+        //    vec3 result=result+ambient;
+        FragColor=vec4(result*attenuation,1.0f);
+    }else if(theta>light.cutout){
+        
+        float ratio=(theta-light.cutout)/(light.cutoff-light.cutout);
+        
+        float r=max(dot(lightDir,normal),0.0);
+        vec3 diffuse=r*light.diffuse*texture(material.diffuse,tex).rgb;
+        
+        
+        vec3 viewDir=normalize(viewPos-pos);
+        //    vec3 n=normalize(viewDir+lightDir);
+        //    float t=max(dot(n,norm),0.0);
+        float t=pow(max(dot(reflect(-lightDir,norm),viewDir),0.0),material.shininess); // reflect(I,N)=>> I-2cos(I,N)*N ==>>so need "-"
+        vec3 specular=t*light.specular*texture(material.specular,tex).rgb;
+        
+        
+        
+        vec3 result=specular+diffuse;
+        //    vec3 result=result+ambient;
+        FragColor=vec4(result*attenuation*ratio,1.0f);
+        
+        
+    }else{
+        FragColor=vec4(0,0,0,1.0f);
+        
+    }
     
     
-    vec3 viewDir=normalize(viewPos-pos);
-//    vec3 n=normalize(viewDir+lightDir);
-//    float t=max(dot(n,norm),0.0);
-    float t=pow(max(dot(reflect(-lightDir,norm),viewDir),0.0),material.shininess); // reflect(I,N)=>> I-2cos(I,N)*N ==>>so need "-"
-    vec3 specular=t*light.specular*texture(material.specular,tex).rgb;
-    
-    
-    
-    vec3 result=specular+diffuse;
-//    vec3 result=result+ambient;
-    FragColor=vec4(result*attenuation,1.0f);
+
     
 //    float ambientStrength=0.6;
 //    vec3 ambient=ambientStrength*lightColor;

@@ -138,7 +138,7 @@ int main()
 //        3,0,2
 //    };
     
-    glm::vec3 lightPos(0.0f);
+    glm::vec3 lightPos(0,0,5);
     glm::vec3 lightColor(1.0,1.0,1.0);
     glm::vec3 objectColor(1.0,0.0f,1.0f);
     unsigned int lightVAO,lightVBO;
@@ -265,15 +265,20 @@ int main()
         glUniform1i(glGetUniformLocation(ourShader.ID,"material.specular"),1);
         glUniform1f(glGetUniformLocation(ourShader.ID,"material.shininess"),32.0f);
         
-        lightColor.x=0.5*sin(glfwGetTime()*2.0f)+0.5;
-        lightColor.y=0.5*sin(glfwGetTime()*0.7f)+0.5;
-        lightColor.z=0.5*sin(glfwGetTime()*0.2f)+0.5;
+//        lightColor.x=0.5*sin(glfwGetTime()*2.0f)+0.5;
+//        lightColor.y=0.5*sin(glfwGetTime()*0.7f)+0.5;
+//        lightColor.z=0.5*sin(glfwGetTime()*0.2f)+0.5;
         
-//        glUniform3f(glGetUniformLocation(ourShader.ID,"light.direction"),0.2,1.0,0.3);
+        
+        
+        glUniform3f(glGetUniformLocation(ourShader.ID,"light.position"),lightPos.x,lightPos.y,lightPos.z);
+        glUniform3f(glGetUniformLocation(ourShader.ID,"light.direction"),0,0,-1);
+        glUniform1f(glGetUniformLocation(ourShader.ID,"light.cutoff"),glm::cos(glm::radians(12.5f)));
+        glUniform1f(glGetUniformLocation(ourShader.ID,"light.cutout"),glm::cos(glm::radians(20.0f)));
+        printf("%f\n",glm::cos(glm::radians(12.5f)));
         glUniform3f(glGetUniformLocation(ourShader.ID,"light.ambient"),lightColor.x,lightColor.y,lightColor.z);
         glUniform3f(glGetUniformLocation(ourShader.ID,"light.diffuse"),lightColor.x,lightColor.y,lightColor.z);
         glUniform3f(glGetUniformLocation(ourShader.ID,"light.specular"),lightColor.x,lightColor.y,lightColor.z);
-        glUniform3f(glGetUniformLocation(ourShader.ID,"light.position"),lightPos.x,lightPos.y,lightPos.z);
         glUniform1f(glGetUniformLocation(ourShader.ID,"light.constant"),1.0f);
         glUniform1f(glGetUniformLocation(ourShader.ID,"light.linear"),0.09f);
         glUniform1f(glGetUniformLocation(ourShader.ID,"light.quadratic"),0.032f);
@@ -299,6 +304,9 @@ int main()
         glUniformMatrix4fv(glGetUniformLocation(lightShader.ID,"model"),1,GL_FALSE,glm::value_ptr(model));
         glUniformMatrix4fv(glGetUniformLocation(lightShader.ID,"view"),1,GL_FALSE,glm::value_ptr(view));
         glUniformMatrix4fv(glGetUniformLocation(lightShader.ID,"pers"),1,GL_FALSE,glm::value_ptr(pers));
+        
+        glUniform3f(glGetUniformLocation(lightShader.ID,"lightColor"),lightColor.x,lightColor.y,lightColor.z);
+        
         glBindVertexArray(lightVAO);
         glDrawArrays(GL_TRIANGLES,0, 36);
         
