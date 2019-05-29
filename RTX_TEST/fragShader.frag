@@ -8,6 +8,8 @@ in vec3 pos;
 uniform vec3 lightPos;
 uniform vec3 lightColor;
 uniform vec3 objectColor;
+
+uniform vec3 viewPos;
 //uniform sampler2D ourTexture1;
 //uniform sampler2D ourTexture2;
 //uniform float ratio;
@@ -17,10 +19,16 @@ void main()
     vec3 ambient=ambientStrength*lightColor;
 //
     vec3 norm=normalize(normal);
+    
     vec3 lightDir=normalize(lightPos-pos);
     float r=max(dot(lightDir,normal),0.0);
-    vec3 result=r*lightColor*objectColor+ambient;
+    vec3 diffuse=r*lightColor*objectColor;
     
+    vec3 viewDir=normalize(viewPos-pos);
+    float t=pow(max(dot(reflect(-lightDir,norm),viewDir),0.0),32);
+    vec3 specular=t*lightColor*objectColor;
+    
+    vec3 result=specular+diffuse+ambient;
 //    vec3 result=result+ambient;
     FragColor=vec4(result,1.0f);
     
