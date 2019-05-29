@@ -258,14 +258,19 @@ int main()
 //        glUniform1i(glGetUniformLocation(ourShader.ID,"ourTexture2"),1);
 //        glUniform1f(glGetUniformLocation(ourShader.ID,"ratio"),ratio);
         
-        glUniform3f(glGetUniformLocation(ourShader.ID,"material.ambient"),1,0.5,0.31);
+        glUniform3f(glGetUniformLocation(ourShader.ID,"material.ambient"),0,0.5,0.31);
         glUniform3f(glGetUniformLocation(ourShader.ID,"material.diffuse"),1,0.5,0.31);
         glUniform3f(glGetUniformLocation(ourShader.ID,"material.specular"),0.5,0.5,0.5);
         glUniform1f(glGetUniformLocation(ourShader.ID,"material.shininess"),32.0f);
         
+        lightColor.x=0.5*sin(glfwGetTime()*2.0f)+0.5;
+        lightColor.y=0.5*sin(glfwGetTime()*0.7f)+0.5;
+        lightColor.z=0.5*sin(glfwGetTime()*0.2f)+0.5goo;
+        glUniform3f(glGetUniformLocation(ourShader.ID,"light.ambient"),lightColor.x,lightColor.y,lightColor.z);
+        glUniform3f(glGetUniformLocation(ourShader.ID,"light.diffuse"),lightColor.x,lightColor.y,lightColor.z);
+        glUniform3f(glGetUniformLocation(ourShader.ID,"light.specular"),lightColor.x,lightColor.y,lightColor.z);
+        glUniform3f(glGetUniformLocation(ourShader.ID,"light.position"),lightPos.x,lightPos.y,lightPos.z);
         
-        glUniform3f(glGetUniformLocation(ourShader.ID,"lightColor"),lightColor.x,lightColor.y,lightColor.z);
-        glUniform3f(glGetUniformLocation(ourShader.ID,"lightPos"),lightPos.x,lightPos.y,lightPos.z);
         glUniform3f(glGetUniformLocation(ourShader.ID,"objectColor"),objectColor.x,objectColor.y,objectColor.z);
         glUniform3f(glGetUniformLocation(ourShader.ID,"viewPos"),camera.Position.x,camera.Position.y,camera.Position.z);
 

@@ -18,26 +18,35 @@ struct Material{
     float shininess;
 };
 
-uniform Material material; 
+struct Light{
+    vec3 position;
+    vec3 ambient;
+    vec3 diffuse;
+    vec3 specular;
+};
+
+
+uniform Material material;
+uniform Light light;
 //uniform sampler2D ourTexture1;
 //uniform sampler2D ourTexture2;
 //uniform float ratio;
 void main()
 {
-    vec3 ambient=material.ambient*lightColor;
+    vec3 ambient=material.ambient*light.ambient;
 //
     vec3 norm=normalize(normal);
     
-    vec3 lightDir=normalize(lightPos-pos);
+    vec3 lightDir=normalize(light.position-pos);
     float r=max(dot(lightDir,normal),0.0);
-    vec3 diffuse=r*lightColor*material.diffuse;
+    vec3 diffuse=r*light.diffuse*material.diffuse;
     
     
     vec3 viewDir=normalize(viewPos-pos);
 //    vec3 n=normalize(viewDir+lightDir);
 //    float t=max(dot(n,norm),0.0);
     float t=pow(max(dot(reflect(-lightDir,norm),viewDir),0.0),material.shininess); // reflect(I,N)=>> I-2cos(I,N)*N ==>>so need "-"
-    vec3 specular=t*lightColor*material.specular;
+    vec3 specular=t*light.specular*material.specular;
     
     
     
