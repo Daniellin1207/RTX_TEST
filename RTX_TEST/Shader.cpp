@@ -60,6 +60,7 @@ void Shader::createShader(const char* vertCode,const char* fragCode){
     
     glGetShaderiv(vertex,GL_COMPILE_STATUS,&success);
     if(!success){
+        glGetShaderInfoLog(vertex,1024,NULL,infoLog);
         cout<<"ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << endl;
     }
     
@@ -69,6 +70,7 @@ void Shader::createShader(const char* vertCode,const char* fragCode){
     
     glGetShaderiv(fragment,GL_COMPILE_STATUS,&success);
     if(!success){
+        glGetShaderInfoLog(fragment,1024,NULL,infoLog);
         cout<<"ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" << infoLog << endl;
     }
     
@@ -78,6 +80,7 @@ void Shader::createShader(const char* vertCode,const char* fragCode){
     glLinkProgram(ID);
     glGetProgramiv(ID,GL_LINK_STATUS,&success);
     if(!success){
+        glGetProgramInfoLog(ID,1024,NULL,infoLog);
         cout<<"ERROR::SHADER::PROGRAM::COMPILATION_FAILED\n"<<infoLog<<endl;
     }
     // 删除着色器，它们已经链接到我们的程序中了，已经不再需要了

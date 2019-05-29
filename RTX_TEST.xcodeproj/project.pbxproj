@@ -5644,6 +5644,8 @@
 		65BB96EE229BCAB20093B7EC /* wall.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = wall.jpg; sourceTree = "<group>"; };
 		65BB96EF229BCADA0093B7EC /* container.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = container.jpg; sourceTree = "<group>"; };
 		65BB96F0229BCE200093B7EC /* awesomeface.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = awesomeface.png; sourceTree = "<group>"; };
+		65BD1908229E19260043BAF5 /* vertLightShader.vert */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.glsl; path = vertLightShader.vert; sourceTree = "<group>"; };
+		65BD1909229E193A0043BAF5 /* fragLightShader.frag */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.glsl; path = fragLightShader.frag; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -5689,6 +5691,8 @@
 				65BB96EB229ADD4B0093B7EC /* fragShader.frag */,
 				650D39DD229D4CA600622B7A /* Camera.cpp */,
 				650D39DE229D4CA600622B7A /* Camera.hpp */,
+				65BD1908229E19260043BAF5 /* vertLightShader.vert */,
+				65BD1909229E193A0043BAF5 /* fragLightShader.frag */,
 			);
 			path = RTX_TEST;
 			sourceTree = "<group>";
