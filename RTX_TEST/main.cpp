@@ -137,7 +137,9 @@ int main()
 //        3,0,2
 //    };
     
-    glm::vec3 lightPos(1.2f,1.0f,2.0f);
+    glm::vec3 lightPos(0.0f);
+    glm::vec3 lightColor(1.0,1.0,1.0);
+    glm::vec3 objectColor(1.0,0.0f,1.0f);
     unsigned int lightVAO,lightVBO;
     glGenVertexArrays(1,&lightVAO);
     glBindVertexArray(lightVAO);
@@ -252,9 +254,12 @@ int main()
         glUniformMatrix4fv(glGetUniformLocation(ourShader.ID,"view"),1,GL_FALSE,glm::value_ptr(view));
         glUniformMatrix4fv(glGetUniformLocation(ourShader.ID,"pers"),1,GL_FALSE,glm::value_ptr(pers));
         
-        glUniform1i(glGetUniformLocation(ourShader.ID,"ourTexture1"),0);
-        glUniform1i(glGetUniformLocation(ourShader.ID,"ourTexture2"),1);
-        glUniform1f(glGetUniformLocation(ourShader.ID,"ratio"),ratio);
+//        glUniform1i(glGetUniformLocation(ourShader.ID,"ourTexture1"),0);
+//        glUniform1i(glGetUniformLocation(ourShader.ID,"ourTexture2"),1);
+//        glUniform1f(glGetUniformLocation(ourShader.ID,"ratio"),ratio);
+        
+        glUniform3f(glGetUniformLocation(ourShader.ID,"lightColor"),lightColor.x,lightColor.y,lightColor.z);
+        glUniform3f(glGetUniformLocation(ourShader.ID,"objectColor"),objectColor.x,objectColor.y,objectColor.z);
         
         for (int i=0; i<10; i++) {
             model=glm::mat4(1.0);
