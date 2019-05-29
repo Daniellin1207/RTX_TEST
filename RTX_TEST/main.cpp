@@ -269,11 +269,14 @@ int main()
         lightColor.y=0.5*sin(glfwGetTime()*0.7f)+0.5;
         lightColor.z=0.5*sin(glfwGetTime()*0.2f)+0.5;
         
-        glUniform3f(glGetUniformLocation(ourShader.ID,"light.direction"),0.2,1.0,0.3);
+//        glUniform3f(glGetUniformLocation(ourShader.ID,"light.direction"),0.2,1.0,0.3);
         glUniform3f(glGetUniformLocation(ourShader.ID,"light.ambient"),lightColor.x,lightColor.y,lightColor.z);
         glUniform3f(glGetUniformLocation(ourShader.ID,"light.diffuse"),lightColor.x,lightColor.y,lightColor.z);
         glUniform3f(glGetUniformLocation(ourShader.ID,"light.specular"),lightColor.x,lightColor.y,lightColor.z);
         glUniform3f(glGetUniformLocation(ourShader.ID,"light.position"),lightPos.x,lightPos.y,lightPos.z);
+        glUniform1f(glGetUniformLocation(ourShader.ID,"light.constant"),1.0f);
+        glUniform1f(glGetUniformLocation(ourShader.ID,"light.linear"),0.09f);
+        glUniform1f(glGetUniformLocation(ourShader.ID,"light.quadratic"),0.032f);
         
         glUniform3f(glGetUniformLocation(ourShader.ID,"objectColor"),objectColor.x,objectColor.y,objectColor.z);
         glUniform3f(glGetUniformLocation(ourShader.ID,"viewPos"),camera.Position.x,camera.Position.y,camera.Position.z);

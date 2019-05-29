@@ -5646,6 +5646,8 @@
 		65BB96F0229BCE200093B7EC /* awesomeface.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = awesomeface.png; sourceTree = "<group>"; };
 		65BD1908229E19260043BAF5 /* vertLightShader.vert */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.glsl; path = vertLightShader.vert; sourceTree = "<group>"; };
 		65BD1909229E193A0043BAF5 /* fragLightShader.frag */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.glsl; path = fragLightShader.frag; sourceTree = "<group>"; };
+		65BD190A229E6C470043BAF5 /* container2_specular.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = container2_specular.png; sourceTree = "<group>"; };
+		65BD190B229E6EF40043BAF5 /* matrix.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = matrix.jpg; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -12368,6 +12370,8 @@
 		65BB96ED229BCAB20093B7EC /* Textures */ = {
 			isa = PBXGroup;
 			children = (
+				65BD190B229E6EF40043BAF5 /* matrix.jpg */,
+				65BD190A229E6C470043BAF5 /* container2_specular.png */,
 				65BB96F0229BCE200093B7EC /* awesomeface.png */,
 				65BB96EF229BCADA0093B7EC /* container.jpg */,
 				65BB96EE229BCAB20093B7EC /* wall.jpg */,
