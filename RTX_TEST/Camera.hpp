@@ -45,7 +45,7 @@ public:
     float MouseSensitivity;
     float Zoom;
     
-    Camera(glm::vec3 position=glm::vec3(0,0,0),glm::vec3 up=glm::vec3(0,1,0),float yaw=YAW,float pitch=PITCH):Front(glm::vec3(0,0,-1)),MovementSpeed(SPEED),MouseSensitivity(SENSITIVITY),Zoom(ZOOM)
+    Camera(glm::vec3 position=glm::vec3(1,0,0),glm::vec3 up=glm::vec3(0,1,0),float yaw=YAW,float pitch=PITCH):Front(glm::vec3(0,0,-1)),MovementSpeed(SPEED),MouseSensitivity(SENSITIVITY),Zoom(ZOOM)
     {
         Position=position;
         WorldUp=up;
@@ -65,35 +65,42 @@ public:
     
     glm::mat4 GetViewMatrix()
     {
+      
+//        printf("%f %f %f\n",Position.x,Position.y,Position.z);
+//        printf("%f %f %f\n",Up.x,Up.y,Up.z);
+//        printf("%f %f %f\n",Front.x,Front.y,Front.z);
+//        printf("%f %f %f\n",Right.x,Right.y,Right.z);
         
+        glm::mat4 translation=glm::mat4(1.0f);
+        translation[3][0]=-Position.x;
+        translation[3][1]=-Position.y;
+        translation[3][2]=-Position.z;
+
+        glm::mat4 rotation=glm::mat4(1.0f);
+        rotation[0][0]=Right.x;
+        rotation[1][0]=Right.y;
+        rotation[2][0]=Right.z;
+
+        rotation[0][1]=Up.x;
+        rotation[1][1]=Up.y;
+        rotation[2][1]=Up.z;
+
+        rotation[0][2]=Front.x;
+        rotation[1][2]=Front.y;
+        rotation[2][2]=Front.z;
         
-//        glm::mat4 translation=glm::mat4(1.0f);
-//        translation[0][3]=-Position.x;
-//        translation[1][3]=-Position.y;
-//        translation[2][3]=-Position.z;
-//
-//        glm::mat4 rotation=glm::mat4(1.0f);
-//        rotation[0][0]=Right.x;
-//        rotation[0][1]=Right.y;
-//        rotation[0][2]=Right.z;
-//
-//        rotation[1][0]=Up.x;
-//        rotation[1][1]=Up.y;
-//        rotation[1][2]=Up.z;
-//
-//        rotation[2][0]=0.0f;
-//        rotation[2][1]=0.0f;
-//        rotation[2][2]=0.0f;
-//
-//        return rotation*translation;
-//        return glm::mat4(Right.x,Right.y,Right.z,-Position.x,
-//                         Up.x,Up.y,Up.z,-Position.y,
-//                         Front.x,Front.y,Front.z,-Position.z,
-//                         0,0,0,1);
-//        return glm::mat4(Right,0,Up,0,Front,0,0,0,0,1);
+        glm::mat4 m=rotation*translation;
+//        glm::mat4 m= glm::lookAt(Position, Position+Front, Up);
         
-        
-        return glm::lookAt(Position, Position+Front, Up);
+//        for(int i=0;i<4;i++)
+//        {
+//            for (int j=0; j<4; j++)
+//            {
+//                std::cout<<m[j][i]<<" ";
+//            }
+//            std::cout<<i<<" "<<std::endl;
+//        }
+        return m;
 //        return glm::lookAt(Position, glm::vec3(0,0,0), Up);
     }
     

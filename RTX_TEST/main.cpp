@@ -16,7 +16,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-Camera camera(glm::vec3(0,0,3),glm::vec3(0,1,0),0,0);
+Camera camera(glm::vec3(0,0,1),glm::vec3(0,1,0),180,0);
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow *window);
 void mouse_callback(GLFWwindow *window,double xpos,double ypos);
