@@ -19,7 +19,8 @@ struct Material{
 };
 
 struct Light{
-    vec3 position;
+//    vec3 position;
+    vec3 direction;
     vec3 ambient;
     vec3 diffuse;
     vec3 specular;
@@ -37,7 +38,7 @@ void main()
 //
     vec3 norm=normalize(normal);
     
-    vec3 lightDir=normalize(light.position-pos);
+    vec3 lightDir=normalize(-light.direction);
     float r=max(dot(lightDir,normal),0.0);
     vec3 diffuse=r*light.diffuse*texture(material.diffuse,tex).rgb;
     
