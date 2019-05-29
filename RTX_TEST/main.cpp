@@ -271,17 +271,17 @@ int main()
         
         
         
-        glUniform3f(glGetUniformLocation(ourShader.ID,"light.position"),lightPos.x,lightPos.y,lightPos.z);
-        glUniform3f(glGetUniformLocation(ourShader.ID,"light.direction"),0,0,-1);
-        glUniform1f(glGetUniformLocation(ourShader.ID,"light.cutoff"),glm::cos(glm::radians(12.5f)));
-        glUniform1f(glGetUniformLocation(ourShader.ID,"light.cutout"),glm::cos(glm::radians(20.0f)));
+        glUniform3f(glGetUniformLocation(ourShader.ID,"light[0].position"),lightPos.x,lightPos.y,lightPos.z);
+        glUniform3f(glGetUniformLocation(ourShader.ID,"light[0].direction"),0,0,-1);
+        glUniform1f(glGetUniformLocation(ourShader.ID,"light[0].cutoff"),glm::cos(glm::radians(12.5f)));
+        glUniform1f(glGetUniformLocation(ourShader.ID,"light[0].cutout"),glm::cos(glm::radians(20.0f)));
         printf("%f\n",glm::cos(glm::radians(12.5f)));
-        glUniform3f(glGetUniformLocation(ourShader.ID,"light.ambient"),lightColor.x,lightColor.y,lightColor.z);
-        glUniform3f(glGetUniformLocation(ourShader.ID,"light.diffuse"),lightColor.x,lightColor.y,lightColor.z);
-        glUniform3f(glGetUniformLocation(ourShader.ID,"light.specular"),lightColor.x,lightColor.y,lightColor.z);
-        glUniform1f(glGetUniformLocation(ourShader.ID,"light.constant"),1.0f);
-        glUniform1f(glGetUniformLocation(ourShader.ID,"light.linear"),0.09f);
-        glUniform1f(glGetUniformLocation(ourShader.ID,"light.quadratic"),0.032f);
+        glUniform3f(glGetUniformLocation(ourShader.ID,"light[0].ambient"),lightColor.x,lightColor.y,lightColor.z);
+        glUniform3f(glGetUniformLocation(ourShader.ID,"light[0].diffuse"),lightColor.x,lightColor.y,lightColor.z);
+        glUniform3f(glGetUniformLocation(ourShader.ID,"light[0].specular"),lightColor.x,lightColor.y,lightColor.z);
+        glUniform1f(glGetUniformLocation(ourShader.ID,"light[0].constant"),1.0f);
+        glUniform1f(glGetUniformLocation(ourShader.ID,"light[0].linear"),0.09f);
+        glUniform1f(glGetUniformLocation(ourShader.ID,"light[0].quadratic"),0.032f);
         
         glUniform3f(glGetUniformLocation(ourShader.ID,"objectColor"),objectColor.x,objectColor.y,objectColor.z);
         glUniform3f(glGetUniformLocation(ourShader.ID,"viewPos"),camera.Position.x,camera.Position.y,camera.Position.z);

@@ -36,41 +36,48 @@ struct Light{
 
 
 uniform Material material;
-uniform Light light;
+uniform Light light[1];
 //uniform sampler2D ourTexture1;
 //uniform sampler2D ourTexture2;
 //uniform float ratio;
 void main()
 {
-    vec3 ambient=material.ambient*light.ambient;
-
-    float distance=length(light.position-pos);
-    float attenuation=1.0/(light.constant+light.linear*distance+light.quadratic*distance*distance);
-    
-    vec3 norm=normalize(normal);
-    
-    vec3 lightDir=normalize(light.position-pos);
-    float theta=dot(lightDir,normalize(-light.direction));
-    
-    float r=max(dot(lightDir,normal),0.0);
-    vec3 diffuse=r*light.diffuse*texture(material.diffuse,tex).rgb;
-    
-    
-    vec3 viewDir=normalize(viewPos-pos);
-    //    vec3 n=normalize(viewDir+lightDir);
-    //    float t=max(dot(n,norm),0.0);
-    float t=pow(max(dot(reflect(-lightDir,norm),viewDir),0.0),material.shininess); // reflect(I,N)=>> I-2cos(I,N)*N ==>>so need "-"
-    vec3 specular=t*light.specular*texture(material.specular,tex).rgb;
-    
-    vec3 result=specular+diffuse;
-    //    vec3 result=result+ambient;
-    float ratio=0.0f;
-    if(theta>light.cutoff){
-        ratio=1.0f;
-    }else if(theta>light.cutout){
-        ratio=(theta-light.cutout)/(light.cutoff-light.cutout);
+    vec4 color=vec4(0);
+    for(int i=0;i<1;i++){
+        vec3 ambient=material.ambient*light[i].ambient;
+        
+        float distance=length(light[i].position-pos);
+        float attenuation=1.0/(light[i].constant+light[i].linear*distance+light[i].quadratic*distance*distance);
+        
+        vec3 norm=normalize(normal);
+        
+        vec3 lightDir=normalize(light[i].position-pos);
+        float theta=dot(lightDir,normalize(-light[i].direction));
+        
+        float r=max(dot(lightDir,normal),0.0);
+        vec3 diffuse=r*light[i].diffuse*texture(material.diffuse,tex).rgb;
+        
+        
+        vec3 viewDir=normalize(viewPos-pos);
+        //    vec3 n=normalize(viewDir+lightDir);
+        //    float t=max(dot(n,norm),0.0);
+        float t=pow(max(dot(reflect(-lightDir,norm),viewDir),0.0),material.shininess); // reflect(I,N)=>> I-2cos(I,N)*N ==>>so need "-"
+        vec3 specular=t*light[i].specular*texture(material.specular,tex).rgb;
+        
+        vec3 result=specular+diffuse;
+        //    vec3 result=result+ambient;
+        float ratio=0.0f;
+        if(theta>light[i].cutoff){
+            ratio=1.0f;
+        }else if(theta>light[i].cutout){
+            ratio=(theta-light[i].cutout)/(light[i].cutoff-light[i].cutout);
+        }
+        
+        color+=vec4(result*attenuation*ratio,1.0f);
+        
     }
-    FragColor=vec4(result*attenuation*ratio,1.0f);
+
+    FragColor=color;
     
 
     
