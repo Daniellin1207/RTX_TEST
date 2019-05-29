@@ -72,6 +72,7 @@ int main()
     
     glEnable(GL_DEPTH_TEST);
     Shader ourShader("/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/vertShader.vert","/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/fragShader.frag");
+    Shader lightShader("/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/vertLightShader.vert","/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/fragLightShader.frag");
     // set up vertex data (and buffer(s)) and configure vertex attributes
     // ------------------------------------------------------------------
     float vertices[] = {
@@ -119,7 +120,7 @@ int main()
     };
     
     glm::vec3 cubePositions[] = {
-        glm::vec3( 0.0f,  0.0f,  0.0f),
+        glm::vec3( 0.0f,  0.0f,  10.0f),
         glm::vec3( 2.0f,  5.0f, -15.0f),
         glm::vec3(-1.5f, -2.2f, -2.5f),
         glm::vec3(-3.8f, -2.0f, -12.3f),
@@ -135,6 +136,17 @@ int main()
 //        0,1,2,
 //        3,0,2
 //    };
+    
+    glm::vec3 lightPos(1.2f,1.0f,2.0f);
+    unsigned int lightVAO,lightVBO;
+    glGenVertexArrays(1,&lightVAO);
+    glBindVertexArray(lightVAO);
+    glGenBuffers(1,&lightVBO);
+    glBindBuffer(GL_ARRAY_BUFFER,lightVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+    glVertexAttribPointer(0,3,GL_FLOAT,GL_FALSE,5*sizeof(float),(void*)0);
+    glEnableVertexAttribArray(0);
+    
     
     unsigned int VBO, VAO;
     glGenVertexArrays(1, &VAO);
@@ -253,6 +265,16 @@ int main()
             glBindVertexArray(VAO);
             glDrawArrays(GL_TRIANGLES, 0, 36);
         }
+        
+        lightShader.use();
+        model=glm::mat4(1.0f);
+        model=glm::translate(model, lightPos);
+        model=glm::scale(model, glm::vec3(0.2f));
+        glUniformMatrix4fv(glGetUniformLocation(lightShader.ID,"model"),1,GL_FALSE,glm::value_ptr(model));
+        glUniformMatrix4fv(glGetUniformLocation(lightShader.ID,"view"),1,GL_FALSE,glm::value_ptr(view));
+        glUniformMatrix4fv(glGetUniformLocation(lightShader.ID,"pers"),1,GL_FALSE,glm::value_ptr(pers));
+        glBindVertexArray(lightVAO);
+        glDrawArrays(GL_TRIANGLES,0, 36);
         
         glfwSwapBuffers(window);
         glfwPollEvents();
