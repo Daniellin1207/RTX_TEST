@@ -16,8 +16,9 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-#define TINYOBJLOADER_IMPLEMENTATION // define this in only *one* .cc
+#define TINYOBJLOADER_IMPLEMENTATION // define this in only *one* .cc // test commit
 #include "tiny_obj_loader.h"
+
 
 Camera camera(glm::vec3(0,0,3),glm::vec3(0,1,0),250,0);
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
