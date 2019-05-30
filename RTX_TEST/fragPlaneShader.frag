@@ -14,5 +14,8 @@ void main()
 {
     //    vec3 tColor=mix(texture(ourTexture1,tex).rgb ,texture(ourTexture2,vec2(1-tex.x,tex.y)).rgb,ratio);
     //    FragColor = vec4(tColor, 1.0f);
-    FragColor=texture(grass,tex);
+    vec4 texColor=texture(grass,tex);
+    if(texColor.a<0.1)
+        discard;
+    FragColor=texColor;
 }

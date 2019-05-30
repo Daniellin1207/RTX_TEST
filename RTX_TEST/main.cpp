@@ -19,7 +19,7 @@
 #define TINYOBJLOADER_IMPLEMENTATION // define this in only *one* .cc
 #include "tiny_obj_loader.h"
 
-Camera camera(glm::vec3(0,0,3),glm::vec3(0,1,0),180,0);
+Camera camera(glm::vec3(0,0,3),glm::vec3(0,1,0),250,0);
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow *window);
 void mouse_callback(GLFWwindow *window,double xpos,double ypos);
@@ -83,6 +83,8 @@ int main()
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_STENCIL_TEST);
     glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     Shader ourShader("/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/vertShader.vert","/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/fragShader.frag");
     Shader lightShader("/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/vertLightShader.vert","/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/fragLightShader.frag");
     Shader singleShader("/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/vertSingleColorShader.vert","/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/fragSingleColorShader.frag");
@@ -294,7 +296,7 @@ int main()
     stbi_image_free(data1);
     
 //    stbi_set_flip_vertically_on_load(false);
-    unsigned char *data2 = stbi_load("/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/Textures/grass.png", &width, &height, &nrChannels, 0);
+    unsigned char *data2 = stbi_load("/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/Textures/blending_transparent_window.png", &width, &height, &nrChannels, 0);
     if (data2)
     {
         glBindTexture(GL_TEXTURE_2D, texture[2]);
@@ -403,8 +405,10 @@ int main()
 //            glBindVertexArray(VAO);
 //            glDrawArrays(GL_TRIANGLES, 0, vertices.size());
 //        }
-        glStencilFunc(GL_ALWAYS, 1, 0xFF);
-        glStencilMask(0xFF);
+//        glStencilFunc(GL_ALWAYS, 1, 0xFF);
+//        glStencilMask(0xFF);
+        
+        
         
         lightShader.use();
         model=glm::mat4(1.0f);
@@ -419,28 +423,29 @@ int main()
         glBindVertexArray(lightVAO);
         glDrawArrays(GL_TRIANGLES,0, 36);
         
-        glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
-        glStencilMask(0x00);
-        glDisable(GL_DEPTH_TEST);
-        singleShader.use();
-        model=glm::scale(model, glm::vec3(1.2f));
-        glUniformMatrix4fv(glGetUniformLocation(singleShader.ID,"model"),1,GL_FALSE,glm::value_ptr(model));
-        glUniformMatrix4fv(glGetUniformLocation(singleShader.ID,"view"),1,GL_FALSE,glm::value_ptr(view));
-        glUniformMatrix4fv(glGetUniformLocation(singleShader.ID,"pers"),1,GL_FALSE,glm::value_ptr(pers));
+//        glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
+//        glStencilMask(0x00);
+//        glDisable(GL_DEPTH_TEST);
+//        singleShader.use();
+//        model=glm::scale(model, glm::vec3(1.2f));
+//        glUniformMatrix4fv(glGetUniformLocation(singleShader.ID,"model"),1,GL_FALSE,glm::value_ptr(model));
+//        glUniformMatrix4fv(glGetUniformLocation(singleShader.ID,"view"),1,GL_FALSE,glm::value_ptr(view));
+//        glUniformMatrix4fv(glGetUniformLocation(singleShader.ID,"pers"),1,GL_FALSE,glm::value_ptr(pers));
+//
+//        glUniform3f(glGetUniformLocation(singleShader.ID,"lightColor"),lightColor.x,lightColor.y,lightColor.z);
+//        glBindVertexArray(lightVAO);
+//        glDrawArrays(GL_TRIANGLES, 0, 36);
+//
+//        glStencilMask(0xFF);
+//        glEnable(GL_DEPTH_TEST);
         
-        glUniform3f(glGetUniformLocation(singleShader.ID,"lightColor"),lightColor.x,lightColor.y,lightColor.z);
-        glBindVertexArray(lightVAO);
-        glDrawArrays(GL_TRIANGLES, 0, 36);
-        
-        glStencilMask(0xFF);
-        glEnable(GL_DEPTH_TEST);
         
         glActiveTexture(GL_TEXTURE2);
         glBindTexture(GL_TEXTURE_2D, texture[2]);
         planeShader.use();
         model=glm::mat4(1.0f);
         model=glm::translate(model, lightPos);
-        model=glm::translate(model, glm::vec3(0,0,1));
+        model=glm::translate(model, glm::vec3(0,0,-2));
         glUniform1i(glGetUniformLocation(planeShader.ID,"grass"),2);
         
         glUniformMatrix4fv(glGetUniformLocation(planeShader.ID,"model"),1,GL_FALSE,glm::value_ptr(model));
