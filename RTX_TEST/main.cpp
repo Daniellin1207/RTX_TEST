@@ -16,7 +16,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-#define TINYOBJLOADER_IMPLEMENTATION // define this in only *one* .cc // test commit
+#define TINYOBJLOADER_IMPLEMENTATION // define this in only *one* .cc // test commit // test commit 2
 #include "tiny_obj_loader.h"
 
 
