@@ -318,10 +318,6 @@ int main()
     glm::vec3 cameraDir=glm::vec3(0,0,-1);
     glm::vec3 cameraUp=glm::vec3(0,1,0);
     
-
-
-    
-    
     unsigned int framebuffer;
     glGenFramebuffers(1,&framebuffer);
     glBindFramebuffer(GL_FRAMEBUFFER,framebuffer);
@@ -335,29 +331,7 @@ int main()
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     
     glFramebufferTexture2D(GL_FRAMEBUFFER,GL_COLOR_ATTACHMENT0,GL_TEXTURE_2D,textureColorBuffer,0);
-    
-    
-//    unsigned int rbo;
-//    glGenRenderbuffers(1,&rbo);
-//    glBindRenderbuffer(GL_RENDERBUFFER,rbo);
-//    glRenderbufferStorage(GL_RENDERBUFFER,GL_DEPTH24_STENCIL8,SCR_WIDTH,SCR_HEIGHT);
-//    glFramebufferRenderbuffer(GL_FRAMEBUFFER,GL_DEPTH_STENCIL_ATTACHMENT,GL_RENDERBUFFER,rbo);
-//    
-//    if(glCheckFramebufferStatus(GL_FRAMEBUFFER)!=GL_FRAMEBUFFER_COMPLETE)
-//    {
-//        std::cout<<"ERROR:FRAMEBUFFER"<<std::endl;
-//    }
     glBindFramebuffer(GL_FRAMEBUFFER,0);
-//    if(glCheckFramebufferStatus(GL_FRAMEBUFFER)!=GL_FRAMEBUFFER_COMPLETE)
-//    {
-//        std::cout<<"ERROR:FRAMEBUFFER"<<std::endl;
-//    }
-//    glBindFramebuffer(GL_FRAMEBUFFER,0);
-//    glDeleteFramebuffers(1,&fbo);
-    
-    // uncomment this call to draw in wireframe polygons.
-//    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-    
     // render loop
     // -----------
     while (!glfwWindowShouldClose(window))
@@ -381,7 +355,6 @@ int main()
 //        float camX=sin(glfwGetTime())*radius;
 //        float camZ=cos(glfwGetTime())*radius;
 //        glm::vec3 cameraPos=glm::vec3(camX,3,camZ);
-//
 //        view=glm::mat4(1.0f);
 //        view= glm::translate(view, cameraPos);
 //        camera.Yaw+=1.0f;
@@ -389,13 +362,8 @@ int main()
         pers=glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 1000.0f);
   
 //        ourShader.use();
-//
 //        glUniformMatrix4fv(glGetUniformLocation(ourShader.ID,"view"),1,GL_FALSE,glm::value_ptr(view));
 //        glUniformMatrix4fv(glGetUniformLocation(ourShader.ID,"pers"),1,GL_FALSE,glm::value_ptr(pers));
-//
-////        glUniform1i(glGetUniformLocation(ourShader.ID,"ourTexture1"),0);
-////        glUniform1i(glGetUniformLocation(ourShader.ID,"ourTexture2"),1);
-////        glUniform1f(glGetUniformLocation(ourShader.ID,"ratio"),ratio);
 //        glActiveTexture(GL_TEXTURE0);
 //        glBindTexture(GL_TEXTURE_2D, texture[0]);
 //        glActiveTexture(GL_TEXTURE1);
@@ -405,12 +373,10 @@ int main()
 //        glUniform1i(glGetUniformLocation(ourShader.ID,"material.specular"),1);
 //        glUniform1f(glGetUniformLocation(ourShader.ID,"material.shininess"),32.0f);
 //
-////        lightColor.x=0.5*sin(glfwGetTime()*2.0f)+0.5;
-////        lightColor.y=0.5*sin(glfwGetTime()*0.7f)+0.5;
-////        lightColor.z=0.5*sin(glfwGetTime()*0.2f)+0.5;
-//
-//
-//
+//        lightColor.x=0.5*sin(glfwGetTime()*2.0f)+0.5;
+//        lightColor.y=0.5*sin(glfwGetTime()*0.7f)+0.5;
+//        lightColor.z=0.5*sin(glfwGetTime()*0.2f)+0.5;
+        
 //        glUniform3f(glGetUniformLocation(ourShader.ID,"light[0].position"),lightPos.x,lightPos.y,lightPos.z);
 //        glUniform3f(glGetUniformLocation(ourShader.ID,"light[0].direction"),0,0,-1);
 //        glUniform1f(glGetUniformLocation(ourShader.ID,"light[0].cutoff"),glm::cos(glm::radians(12.5f)));
@@ -423,21 +389,15 @@ int main()
 //        glUniform1f(glGetUniformLocation(ourShader.ID,"light[0].linear"),0.09f);
 //        glUniform1f(glGetUniformLocation(ourShader.ID,"light[0].quadratic"),0.032f);
 //
-//        glUniform3f(glGetUniformLocation(ourShader.ID,"objectColor"),objectColor.x,objectColor.y,objectColor.z);
-//        glUniform3f(glGetUniformLocation(ourShader.ID,"viewPos"),camera.Position.x,camera.Position.y,camera.Position.z);
-//
 //        model=glm::mat4(1.0);
 //        model=glm::translate(model, cubePositions[1]);
-//
 //        glUniformMatrix4fv(glGetUniformLocation(ourShader.ID,"model"),1,GL_FALSE,glm::value_ptr(model));
 //
 //        glBindVertexArray(VAO);
 //        glDrawArrays(GL_TRIANGLES, 0, vertices.size());
-        
-//        glBindVertexArray(0);
 //        glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, &indices[0]);
-        
-//        glDrawElements(GL_TRIANGLES, indices.size(), 0, &indices[0]);
+//        glBindVertexArray(0);
+
 //        for (int i=0; i<1; i++) {
 //            model=glm::mat4(1.0);
 //            model=glm::translate(model, cubePositions[i]);
@@ -507,9 +467,6 @@ int main()
         glBindVertexArray(planeVAO);
         glDrawArrays(GL_TRIANGLES,0, 6);
         
-        
-        
-        
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
@@ -531,12 +488,6 @@ void processInput(GLFWwindow *window)
 {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
-//    if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
-//        if(ratio<1.0)
-//            ratio+=0.1*zoom;
-//    if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
-//        if(ratio>0.0)
-//            ratio-=0.1*zoom;
     if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
         camera.ProcessKeyboard(LEFT, deltaTime);
     if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
@@ -564,10 +515,6 @@ void mouse_callback(GLFWwindow *window,double xpos,double ypos)
     camera.ProcessMouseMovement(xoffset, yoffset);
 }
 
-//void scroll_callback(GLFWwindow *window, double xoffset,double yoffset)
-//{
-//    camera.ProcessMouseScroll(xoffset,yoffset);
-//}
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes
 // ---------------------------------------------------------------------------------------------
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
