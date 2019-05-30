@@ -85,8 +85,8 @@ int main()
     glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    glEnable(GL_CULL_FACE);
-    glCullFace(GL_BACK);
+//    glEnable(GL_CULL_FACE);
+//    glCullFace(GL_BACK);
     Shader ourShader("/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/vertShader.vert","/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/fragShader.frag");
     Shader lightShader("/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/vertLightShader.vert","/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/fragLightShader.frag");
     Shader singleShader("/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/vertSingleColorShader.vert","/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/fragSingleColorShader.frag");
@@ -452,18 +452,21 @@ int main()
         
         
         
-        lightShader.use();
+        ourShader.use();
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, texture[0]);
         model=glm::mat4(1.0f);
         model=glm::translate(model, lightPos);
         model=glm::scale(model, glm::vec3(0.2f));
-        glUniformMatrix4fv(glGetUniformLocation(lightShader.ID,"model"),1,GL_FALSE,glm::value_ptr(model));
-        glUniformMatrix4fv(glGetUniformLocation(lightShader.ID,"view"),1,GL_FALSE,glm::value_ptr(view));
-        glUniformMatrix4fv(glGetUniformLocation(lightShader.ID,"pers"),1,GL_FALSE,glm::value_ptr(pers));
+        glUniformMatrix4fv(glGetUniformLocation(ourShader.ID,"model"),1,GL_FALSE,glm::value_ptr(model));
+        glUniformMatrix4fv(glGetUniformLocation(ourShader.ID,"view"),1,GL_FALSE,glm::value_ptr(view));
+        glUniformMatrix4fv(glGetUniformLocation(ourShader.ID,"pers"),1,GL_FALSE,glm::value_ptr(pers));
 
-        glUniform3f(glGetUniformLocation(lightShader.ID,"lightColor"),lightColor.x,lightColor.y,lightColor.z);
+        glUniform1i(glGetUniformLocation(ourShader.ID,"material.diffuse"),0);
+        glUniform3f(glGetUniformLocation(ourShader.ID,"lightColor"),lightColor.x,lightColor.y,lightColor.z);
 
-        glBindVertexArray(lightVAO);
-        glDrawArrays(GL_TRIANGLES,0, 36);
+        glBindVertexArray(VAO);
+        glDrawArrays(GL_TRIANGLES,0, vertices.size());
         
 //        glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
 //        glStencilMask(0x00);

@@ -19,7 +19,7 @@ Shader::Shader(const char* vertPath, const char* fragPath){
     std::string fragString;
     std::ifstream vShaderFile;
     std::ifstream fShaderFile;
-    
+    path=(fragPath);
     // 保证ifstream对象可以抛出异常：
     vShaderFile.exceptions (std::ifstream::failbit | std::ifstream::badbit);
     fShaderFile.exceptions (std::ifstream::failbit | std::ifstream::badbit);
@@ -72,6 +72,7 @@ void Shader::createShader(const char* vertCode,const char* fragCode){
     if(!success){
         glGetShaderInfoLog(fragment,1024,NULL,infoLog);
         cout<<"ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" << infoLog << endl;
+        cout<<path<<endl;
     }
     
     ID=glCreateProgram();

@@ -20,6 +20,7 @@ public:
 private:
     std::string vertexCode;
     std::string fragmentCode;
+    std::string path;
     void createShader(const char* vertCode,const char* fragCode);
 };
 
