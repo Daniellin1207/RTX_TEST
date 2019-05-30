@@ -40,6 +40,15 @@ uniform Light light[1];
 //uniform sampler2D ourTexture1;
 //uniform sampler2D ourTexture2;
 //uniform float ratio;
+float near=0.1;
+float far=100.0f;
+float LinearizeDepth(float depth)
+{
+    float z=depth*2.0-1.0;
+    return(2.0*near*far)/(far+near-z*(far-near));
+}
+
+
 void main()
 {
     vec4 color=vec4(0);
@@ -78,8 +87,10 @@ void main()
         
     }
     color=texture(material.specular,tex);
+    
+    float depth=LinearizeDepth(gl_FragCoord.z)/far;
 
-    FragColor=color;
+    FragColor=vec4(vec3(depth),1.0f);
     
 
     
@@ -91,3 +102,4 @@ void main()
 //    vec3 tColor=mix(texture(ourTexture1,tex).rgb ,texture(ourTexture2,vec2(1-tex.x,tex.y)).rgb,ratio);
 //    FragColor = vec4(tColor, 1.0f);
 }
+
