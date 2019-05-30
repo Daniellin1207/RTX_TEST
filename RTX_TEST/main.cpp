@@ -81,8 +81,11 @@ int main()
     }
     
     glEnable(GL_DEPTH_TEST);
+    glEnable(GL_STENCIL_TEST);
+    glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
     Shader ourShader("/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/vertShader.vert","/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/fragShader.frag");
     Shader lightShader("/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/vertLightShader.vert","/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/fragLightShader.frag");
+    Shader singleShader("/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/vertSingleColorShader.vert","/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/fragSingleColorShader.frag");
     // set up vertex data (and buffer(s)) and configure vertex attributes
     // ------------------------------------------------------------------
     float lightVertices[] = {
@@ -293,7 +296,7 @@ int main()
         // render
         // ------
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
         
 //        float camX=sin(glfwGetTime())*radius;
 //        float camZ=cos(glfwGetTime())*radius;
@@ -305,51 +308,52 @@ int main()
         view=camera.GetViewMatrix();
         pers=glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 1000.0f);
   
-        ourShader.use();
+//        ourShader.use();
+//
+//        glUniformMatrix4fv(glGetUniformLocation(ourShader.ID,"view"),1,GL_FALSE,glm::value_ptr(view));
+//        glUniformMatrix4fv(glGetUniformLocation(ourShader.ID,"pers"),1,GL_FALSE,glm::value_ptr(pers));
+//
+////        glUniform1i(glGetUniformLocation(ourShader.ID,"ourTexture1"),0);
+////        glUniform1i(glGetUniformLocation(ourShader.ID,"ourTexture2"),1);
+////        glUniform1f(glGetUniformLocation(ourShader.ID,"ratio"),ratio);
+//        glActiveTexture(GL_TEXTURE0);
+//        glBindTexture(GL_TEXTURE_2D, texture[0]);
+//        glActiveTexture(GL_TEXTURE1);
+//        glBindTexture(GL_TEXTURE_2D, texture[1]);
+//        glUniform3f(glGetUniformLocation(ourShader.ID,"material.ambient"),0,0.5,0.31);
+//        glUniform1i(glGetUniformLocation(ourShader.ID,"material.diffuse"),0);
+//        glUniform1i(glGetUniformLocation(ourShader.ID,"material.specular"),1);
+//        glUniform1f(glGetUniformLocation(ourShader.ID,"material.shininess"),32.0f);
+//
+////        lightColor.x=0.5*sin(glfwGetTime()*2.0f)+0.5;
+////        lightColor.y=0.5*sin(glfwGetTime()*0.7f)+0.5;
+////        lightColor.z=0.5*sin(glfwGetTime()*0.2f)+0.5;
+//
+//
+//
+//        glUniform3f(glGetUniformLocation(ourShader.ID,"light[0].position"),lightPos.x,lightPos.y,lightPos.z);
+//        glUniform3f(glGetUniformLocation(ourShader.ID,"light[0].direction"),0,0,-1);
+//        glUniform1f(glGetUniformLocation(ourShader.ID,"light[0].cutoff"),glm::cos(glm::radians(12.5f)));
+//        glUniform1f(glGetUniformLocation(ourShader.ID,"light[0].cutout"),glm::cos(glm::radians(20.0f)));
+//
+//        glUniform3f(glGetUniformLocation(ourShader.ID,"light[0].ambient"),lightColor.x,lightColor.y,lightColor.z);
+//        glUniform3f(glGetUniformLocation(ourShader.ID,"light[0].diffuse"),lightColor.x,lightColor.y,lightColor.z);
+//        glUniform3f(glGetUniformLocation(ourShader.ID,"light[0].specular"),lightColor.x,lightColor.y,lightColor.z);
+//        glUniform1f(glGetUniformLocation(ourShader.ID,"light[0].constant"),1.0f);
+//        glUniform1f(glGetUniformLocation(ourShader.ID,"light[0].linear"),0.09f);
+//        glUniform1f(glGetUniformLocation(ourShader.ID,"light[0].quadratic"),0.032f);
+//
+//        glUniform3f(glGetUniformLocation(ourShader.ID,"objectColor"),objectColor.x,objectColor.y,objectColor.z);
+//        glUniform3f(glGetUniformLocation(ourShader.ID,"viewPos"),camera.Position.x,camera.Position.y,camera.Position.z);
+//
+//        model=glm::mat4(1.0);
+//        model=glm::translate(model, cubePositions[1]);
+//
+//        glUniformMatrix4fv(glGetUniformLocation(ourShader.ID,"model"),1,GL_FALSE,glm::value_ptr(model));
+//
+//        glBindVertexArray(VAO);
+//        glDrawArrays(GL_TRIANGLES, 0, vertices.size());
         
-        glUniformMatrix4fv(glGetUniformLocation(ourShader.ID,"view"),1,GL_FALSE,glm::value_ptr(view));
-        glUniformMatrix4fv(glGetUniformLocation(ourShader.ID,"pers"),1,GL_FALSE,glm::value_ptr(pers));
-        
-//        glUniform1i(glGetUniformLocation(ourShader.ID,"ourTexture1"),0);
-//        glUniform1i(glGetUniformLocation(ourShader.ID,"ourTexture2"),1);
-//        glUniform1f(glGetUniformLocation(ourShader.ID,"ratio"),ratio);
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, texture[0]);
-        glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_2D, texture[1]);
-        glUniform3f(glGetUniformLocation(ourShader.ID,"material.ambient"),0,0.5,0.31);
-        glUniform1i(glGetUniformLocation(ourShader.ID,"material.diffuse"),0);
-        glUniform1i(glGetUniformLocation(ourShader.ID,"material.specular"),1);
-        glUniform1f(glGetUniformLocation(ourShader.ID,"material.shininess"),32.0f);
-        
-//        lightColor.x=0.5*sin(glfwGetTime()*2.0f)+0.5;
-//        lightColor.y=0.5*sin(glfwGetTime()*0.7f)+0.5;
-//        lightColor.z=0.5*sin(glfwGetTime()*0.2f)+0.5;
-        
-        
-        
-        glUniform3f(glGetUniformLocation(ourShader.ID,"light[0].position"),lightPos.x,lightPos.y,lightPos.z);
-        glUniform3f(glGetUniformLocation(ourShader.ID,"light[0].direction"),0,0,-1);
-        glUniform1f(glGetUniformLocation(ourShader.ID,"light[0].cutoff"),glm::cos(glm::radians(12.5f)));
-        glUniform1f(glGetUniformLocation(ourShader.ID,"light[0].cutout"),glm::cos(glm::radians(20.0f)));
-        
-        glUniform3f(glGetUniformLocation(ourShader.ID,"light[0].ambient"),lightColor.x,lightColor.y,lightColor.z);
-        glUniform3f(glGetUniformLocation(ourShader.ID,"light[0].diffuse"),lightColor.x,lightColor.y,lightColor.z);
-        glUniform3f(glGetUniformLocation(ourShader.ID,"light[0].specular"),lightColor.x,lightColor.y,lightColor.z);
-        glUniform1f(glGetUniformLocation(ourShader.ID,"light[0].constant"),1.0f);
-        glUniform1f(glGetUniformLocation(ourShader.ID,"light[0].linear"),0.09f);
-        glUniform1f(glGetUniformLocation(ourShader.ID,"light[0].quadratic"),0.032f);
-        
-        glUniform3f(glGetUniformLocation(ourShader.ID,"objectColor"),objectColor.x,objectColor.y,objectColor.z);
-        glUniform3f(glGetUniformLocation(ourShader.ID,"viewPos"),camera.Position.x,camera.Position.y,camera.Position.z);
-
-        model=glm::mat4(1.0);
-        model=glm::translate(model, cubePositions[1]);
-        
-        glUniformMatrix4fv(glGetUniformLocation(ourShader.ID,"model"),1,GL_FALSE,glm::value_ptr(model));
-        
-        glBindVertexArray(VAO);
-        glDrawArrays(GL_TRIANGLES, 0, vertices.size());
 //        glBindVertexArray(0);
 //        glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, &indices[0]);
         
@@ -363,6 +367,8 @@ int main()
 //            glBindVertexArray(VAO);
 //            glDrawArrays(GL_TRIANGLES, 0, vertices.size());
 //        }
+        glStencilFunc(GL_ALWAYS, 1, 0xFF);
+        glStencilMask(0xFF);
         
         lightShader.use();
         model=glm::mat4(1.0f);
@@ -377,7 +383,25 @@ int main()
         glBindVertexArray(lightVAO);
         glDrawArrays(GL_TRIANGLES,0, 36);
         
-        glBindVertexArray(0);
+        glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
+        glStencilMask(0x00);
+        glDisable(GL_DEPTH_TEST);
+        singleShader.use();
+        model=glm::scale(model, glm::vec3(1.2f));
+        glUniformMatrix4fv(glGetUniformLocation(singleShader.ID,"model"),1,GL_FALSE,glm::value_ptr(model));
+        glUniformMatrix4fv(glGetUniformLocation(singleShader.ID,"view"),1,GL_FALSE,glm::value_ptr(view));
+        glUniformMatrix4fv(glGetUniformLocation(singleShader.ID,"pers"),1,GL_FALSE,glm::value_ptr(pers));
+        
+        glUniform3f(glGetUniformLocation(singleShader.ID,"lightColor"),lightColor.x,lightColor.y,lightColor.z);
+        glBindVertexArray(lightVAO);
+        glDrawArrays(GL_TRIANGLES, 0, 36);
+        
+        glStencilMask(0xFF);
+        glEnable(GL_DEPTH_TEST);
+        
+        
+        
+        
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
