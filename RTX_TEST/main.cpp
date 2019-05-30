@@ -45,7 +45,7 @@ float lastFrame=0.0f;
 struct Vertex{
     glm::vec3 position;
     glm::vec3 normal;
-//    glm::vec2 tex;
+    glm::vec2 tex;
 };
 
 int main()
@@ -163,6 +163,10 @@ int main()
                 attrib.normals[3*index.normal_index+1],
                 attrib.normals[3*index.normal_index+2],
             };
+            vertex.tex={
+                attrib.texcoords[2*index.texcoord_index+0],
+                attrib.texcoords[2*index.texcoord_index+1],
+            };
             vertices.push_back(vertex);
             indices.push_back(indices.size());
 //            std::cout<<indices.size()<<std::endl;
@@ -218,8 +222,8 @@ int main()
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(3*sizeof(float)));
     glEnableVertexAttribArray(1);
-//    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6*sizeof(float)));
-//    glEnableVertexAttribArray(2);
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(6*sizeof(float)));
+    glEnableVertexAttribArray(2);
     
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size()*sizeof(unsigned int), &indices[0], GL_STATIC_DRAW);
