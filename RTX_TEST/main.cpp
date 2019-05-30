@@ -16,6 +16,9 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+#define TINYOBJLOADER_IMPLEMENTATION // define this in only *one* .cc
+#include "tiny_obj_loader.h"
+
 Camera camera(glm::vec3(0,0,3),glm::vec3(0,1,0),90,0);
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow *window);
@@ -37,6 +40,13 @@ bool firstMouse=true;
 float deltaTime=0.0f;
 float lastFrame=0.0f;
 
+
+
+struct Vertex{
+    glm::vec3 position;
+    glm::vec3 normal;
+//    glm::vec2 tex;
+};
 
 int main()
 {
@@ -75,7 +85,7 @@ int main()
     Shader lightShader("/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/vertLightShader.vert","/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/fragLightShader.frag");
     // set up vertex data (and buffer(s)) and configure vertex attributes
     // ------------------------------------------------------------------
-    float vertices[] = {
+    float lightVertices[] = {
         // positions          // normals           // texture coords
         -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f,  0.0f,
         0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f,  0.0f,
@@ -83,35 +93,35 @@ int main()
         0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f,  1.0f,
         -0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f,  1.0f,
         -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f,  0.0f,
-        
+
         -0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  0.0f,  0.0f,
         0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  1.0f,  0.0f,
         0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  1.0f,  1.0f,
         0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  1.0f,  1.0f,
         -0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  0.0f,  1.0f,
         -0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  0.0f,  0.0f,
-        
+
         -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  1.0f,  0.0f,
         -0.5f,  0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  1.0f,  1.0f,
         -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  0.0f,  1.0f,
         -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  0.0f,  1.0f,
         -0.5f, -0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  0.0f,  0.0f,
         -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  1.0f,  0.0f,
-        
+
         0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  1.0f,  0.0f,
         0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  1.0f,  1.0f,
         0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  0.0f,  1.0f,
         0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  0.0f,  1.0f,
         0.5f, -0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  0.0f,  0.0f,
         0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  1.0f,  0.0f,
-        
+
         -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  0.0f,  1.0f,
         0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  1.0f,  1.0f,
         0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  1.0f,  0.0f,
         0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  1.0f,  0.0f,
         -0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  0.0f,  0.0f,
         -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  0.0f,  1.0f,
-        
+
         -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f,  1.0f,
         0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  1.0f,  1.0f,
         0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  1.0f,  0.0f,
@@ -119,6 +129,45 @@ int main()
         -0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  0.0f,  0.0f,
         -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f,  1.0f
     };
+    std::vector<Vertex> vertices;
+    std::vector<unsigned int>indices;
+    
+    const std::string path = "/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/Models/cube.obj";
+    tinyobj::attrib_t attrib;
+    std::vector<tinyobj::shape_t> shapes;
+    std::vector<tinyobj::material_t> materials;
+    std::string warn;
+    std::string err;
+    
+    //    bool LoadObj(attrib_t *attrib, std::vector<shape_t> *shapes,
+    //                 std::vector<material_t> *materials, std::string *warn,
+    //                 std::string *err, const char *filename, const char *mtl_basedir,
+    //                 bool trianglulate, bool default_vcols_fallback)
+    if(!tinyobj::LoadObj(&attrib,&shapes,&materials,&warn,&err,path.c_str()))
+    {
+        throw std::runtime_error(warn+err);
+    }
+    
+    for(auto& shape:shapes)
+    {
+        for (auto& index: shape.mesh.indices)
+        {
+            Vertex vertex={};
+            vertex.position={
+                attrib.vertices[3*index.vertex_index+0],
+                attrib.vertices[3*index.vertex_index+1],
+                attrib.vertices[3*index.vertex_index+2],
+            };
+            vertex.normal={
+                attrib.normals[3*index.normal_index+0],
+                attrib.normals[3*index.normal_index+1],
+                attrib.normals[3*index.normal_index+2],
+            };
+            vertices.push_back(vertex);
+            indices.push_back(indices.size());
+//            std::cout<<indices.size()<<std::endl;
+        }
+    }
     
     glm::vec3 cubePositions[] = {
         glm::vec3( 0.0f,  0.0f,  10.0f),
@@ -146,7 +195,7 @@ int main()
     glBindVertexArray(lightVAO);
     glGenBuffers(1,&lightVBO);
     glBindBuffer(GL_ARRAY_BUFFER,lightVBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(lightVertices), lightVertices, GL_STATIC_DRAW);
     glVertexAttribPointer(0,3,GL_FLOAT,GL_FALSE,8*sizeof(float),(void*)0);
     glEnableVertexAttribArray(0);
     
@@ -154,22 +203,25 @@ int main()
     unsigned int VBO, VAO;
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);
-//    unsigned int EBO;
-//    glGenBuffers(1,&EBO);
+    unsigned int EBO;
+    glGenBuffers(1,&EBO);
     
     glBindVertexArray(VAO);
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-    
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+    glBufferData(GL_ARRAY_BUFFER, vertices.size()*sizeof(Vertex), &vertices[0], GL_STATIC_DRAW);
+
+    for(int i = 0 ;i<vertices.size();i++){
+        std::cout<<vertices[i].position.x<<" "<<vertices[i].position.y<<" "<<vertices[i].position.z<<std::endl;
+    }
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)0);
     glEnableVertexAttribArray(0);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3*sizeof(float)));
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(3*sizeof(float)));
     glEnableVertexAttribArray(1);
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6*sizeof(float)));
-    glEnableVertexAttribArray(2);
+//    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6*sizeof(float)));
+//    glEnableVertexAttribArray(2);
     
-//    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-//    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size()*sizeof(unsigned int), &indices[0], GL_STATIC_DRAW);
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
@@ -218,7 +270,7 @@ int main()
     glm::vec3 cameraDir=glm::vec3(0,0,-1);
     glm::vec3 cameraUp=glm::vec3(0,1,0);
     
-    
+
     // uncomment this call to draw in wireframe polygons.
 //    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     
@@ -275,7 +327,7 @@ int main()
         glUniform3f(glGetUniformLocation(ourShader.ID,"light[0].direction"),0,0,-1);
         glUniform1f(glGetUniformLocation(ourShader.ID,"light[0].cutoff"),glm::cos(glm::radians(12.5f)));
         glUniform1f(glGetUniformLocation(ourShader.ID,"light[0].cutout"),glm::cos(glm::radians(20.0f)));
-        printf("%f\n",glm::cos(glm::radians(12.5f)));
+        
         glUniform3f(glGetUniformLocation(ourShader.ID,"light[0].ambient"),lightColor.x,lightColor.y,lightColor.z);
         glUniform3f(glGetUniformLocation(ourShader.ID,"light[0].diffuse"),lightColor.x,lightColor.y,lightColor.z);
         glUniform3f(glGetUniformLocation(ourShader.ID,"light[0].specular"),lightColor.x,lightColor.y,lightColor.z);
@@ -286,16 +338,26 @@ int main()
         glUniform3f(glGetUniformLocation(ourShader.ID,"objectColor"),objectColor.x,objectColor.y,objectColor.z);
         glUniform3f(glGetUniformLocation(ourShader.ID,"viewPos"),camera.Position.x,camera.Position.y,camera.Position.z);
 
+        model=glm::mat4(1.0);
+        model=glm::translate(model, cubePositions[1]);
         
-        for (int i=0; i<10; i++) {
-            model=glm::mat4(1.0);
-            model=glm::translate(model, cubePositions[i]);
-
-            glUniformMatrix4fv(glGetUniformLocation(ourShader.ID,"model"),1,GL_FALSE,glm::value_ptr(model));
-          
-            glBindVertexArray(VAO);
-            glDrawArrays(GL_TRIANGLES, 0, 36);
-        }
+        glUniformMatrix4fv(glGetUniformLocation(ourShader.ID,"model"),1,GL_FALSE,glm::value_ptr(model));
+        
+        glBindVertexArray(VAO);
+        glDrawArrays(GL_TRIANGLES, 0, 36);
+//        glBindVertexArray(0);
+//        glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, &indices[0]);
+        
+//        glDrawElements(GL_TRIANGLES, indices.size(), 0, &indices[0]);
+//        for (int i=0; i<1; i++) {
+//            model=glm::mat4(1.0);
+//            model=glm::translate(model, cubePositions[i]);
+//            
+//            glUniformMatrix4fv(glGetUniformLocation(ourShader.ID,"model"),1,GL_FALSE,glm::value_ptr(model));
+//            
+//            glBindVertexArray(VAO);
+//            glDrawArrays(GL_TRIANGLES, 0, vertices.size());
+//        }
         
         lightShader.use();
         model=glm::mat4(1.0f);
@@ -304,12 +366,13 @@ int main()
         glUniformMatrix4fv(glGetUniformLocation(lightShader.ID,"model"),1,GL_FALSE,glm::value_ptr(model));
         glUniformMatrix4fv(glGetUniformLocation(lightShader.ID,"view"),1,GL_FALSE,glm::value_ptr(view));
         glUniformMatrix4fv(glGetUniformLocation(lightShader.ID,"pers"),1,GL_FALSE,glm::value_ptr(pers));
-        
+
         glUniform3f(glGetUniformLocation(lightShader.ID,"lightColor"),lightColor.x,lightColor.y,lightColor.z);
-        
+
         glBindVertexArray(lightVAO);
         glDrawArrays(GL_TRIANGLES,0, 36);
         
+        glBindVertexArray(0);
         glfwSwapBuffers(window);
         glfwPollEvents();
     }

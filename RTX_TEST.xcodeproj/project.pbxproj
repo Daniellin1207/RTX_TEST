@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		6501CF23229F673F0066F8CF /* libassimp.5.0.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 6501CF22229F673F0066F8CF /* libassimp.5.0.0.dylib */; };
 		650D39DF229D4CA600622B7A /* Camera.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 650D39DD229D4CA600622B7A /* Camera.cpp */; };
 		65BB8072229A7DF50093B7EC /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 65BB8071229A7DF50093B7EC /* main.cpp */; };
 		65BB96E4229A855F0093B7EC /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 65BB8079229A7E890093B7EC /* OpenGL.framework */; };
@@ -28,6 +29,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		6501CF22229F673F0066F8CF /* libassimp.5.0.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libassimp.5.0.0.dylib; path = ../assimp/lib/libassimp.5.0.0.dylib; sourceTree = "<group>"; };
 		650D39DD229D4CA600622B7A /* Camera.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Camera.cpp; sourceTree = "<group>"; };
 		650D39DE229D4CA600622B7A /* Camera.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = Camera.hpp; sourceTree = "<group>"; };
 		65BB806E229A7DF50093B7EC /* RTX_TEST */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = RTX_TEST; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -5655,6 +5657,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				6501CF23229F673F0066F8CF /* libassimp.5.0.0.dylib in Frameworks */,
 				65BB96E6229A85A40093B7EC /* libglfw.3.3.dylib in Frameworks */,
 				65BB96E5229A85860093B7EC /* libGLEW.2.1.0.dylib in Frameworks */,
 				65BB96E4229A855F0093B7EC /* OpenGL.framework in Frameworks */,
@@ -5664,6 +5667,13 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		6501CF24229F6ED20066F8CF /* Models */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
 		65BB8065229A7DF50093B7EC = {
 			isa = PBXGroup;
 			children = (
@@ -5684,6 +5694,7 @@
 		65BB8070229A7DF50093B7EC /* RTX_TEST */ = {
 			isa = PBXGroup;
 			children = (
+				6501CF24229F6ED20066F8CF /* Models */,
 				65BB96ED229BCAB20093B7EC /* Textures */,
 				65BB96EC229BCA450093B7EC /* stb_image.h */,
 				65BB8071229A7DF50093B7EC /* main.cpp */,
@@ -5702,6 +5713,7 @@
 		65BB8078229A7E890093B7EC /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				6501CF22229F673F0066F8CF /* libassimp.5.0.0.dylib */,
 				65BB807B229A7EBD0093B7EC /* Cellar */,
 				65BB8079229A7E890093B7EC /* OpenGL.framework */,
 			);
@@ -12564,10 +12576,13 @@
 					/Users/daniel/CodeManager/glad/include,
 					/usr/local/Cellar/glew/2.1.0/include,
 					/Users/daniel/CodeManager/glm,
+					/Users/daniel/CodeManager/assimp/include,
+					/Users/daniel/CodeManager/tinyobjloader,
 				);
 				LIBRARY_SEARCH_PATHS = (
 					/usr/local/Cellar/glew/2.1.0/lib,
 					/usr/local/Cellar/glfw/3.3/lib,
+					/Users/daniel/CodeManager/assimp/lib,
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
@@ -12582,10 +12597,13 @@
 					/Users/daniel/CodeManager/glad/include,
 					/usr/local/Cellar/glew/2.1.0/include,
 					/Users/daniel/CodeManager/glm,
+					/Users/daniel/CodeManager/assimp/include,
+					/Users/daniel/CodeManager/tinyobjloader,
 				);
 				LIBRARY_SEARCH_PATHS = (
 					/usr/local/Cellar/glew/2.1.0/lib,
 					/usr/local/Cellar/glfw/3.3/lib,
+					/Users/daniel/CodeManager/assimp/lib,
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
