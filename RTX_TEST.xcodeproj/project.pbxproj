@@ -30,8 +30,14 @@
 
 /* Begin PBXFileReference section */
 		6501CF22229F673F0066F8CF /* libassimp.5.0.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libassimp.5.0.0.dylib; path = ../assimp/lib/libassimp.5.0.0.dylib; sourceTree = "<group>"; };
+		6501CF25229FCAD80066F8CF /* vertSingleColorShader.vert */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.glsl; path = vertSingleColorShader.vert; sourceTree = "<group>"; };
+		6501CF26229FCAEA0066F8CF /* fragSingleColorShader.frag */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.glsl; path = fragSingleColorShader.frag; sourceTree = "<group>"; };
+		6501CF27229FD1E50066F8CF /* vertPlaneShader.vert */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.glsl; path = vertPlaneShader.vert; sourceTree = "<group>"; };
+		6501CF28229FD1FA0066F8CF /* fragPlaneShader.frag */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.glsl; path = fragPlaneShader.frag; sourceTree = "<group>"; };
+		6501CF29229FD29D0066F8CF /* grass.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = grass.png; sourceTree = "<group>"; };
 		650D39DD229D4CA600622B7A /* Camera.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Camera.cpp; sourceTree = "<group>"; };
 		650D39DE229D4CA600622B7A /* Camera.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = Camera.hpp; sourceTree = "<group>"; };
+		65A9DDC7229FDA6800FB7FB8 /* blending_transparent_window.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = blending_transparent_window.png; sourceTree = "<group>"; };
 		65BB806E229A7DF50093B7EC /* RTX_TEST */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = RTX_TEST; sourceTree = BUILT_PRODUCTS_DIR; };
 		65BB8071229A7DF50093B7EC /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		65BB8079229A7E890093B7EC /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = System/Library/Frameworks/OpenGL.framework; sourceTree = SDKROOT; };
@@ -5706,6 +5712,10 @@
 				650D39DE229D4CA600622B7A /* Camera.hpp */,
 				65BD1908229E19260043BAF5 /* vertLightShader.vert */,
 				65BD1909229E193A0043BAF5 /* fragLightShader.frag */,
+				6501CF25229FCAD80066F8CF /* vertSingleColorShader.vert */,
+				6501CF26229FCAEA0066F8CF /* fragSingleColorShader.frag */,
+				6501CF27229FD1E50066F8CF /* vertPlaneShader.vert */,
+				6501CF28229FD1FA0066F8CF /* fragPlaneShader.frag */,
 			);
 			path = RTX_TEST;
 			sourceTree = "<group>";
@@ -12382,9 +12392,11 @@
 		65BB96ED229BCAB20093B7EC /* Textures */ = {
 			isa = PBXGroup;
 			children = (
+				6501CF29229FD29D0066F8CF /* grass.png */,
 				65BD190B229E6EF40043BAF5 /* matrix.jpg */,
 				65BD190A229E6C470043BAF5 /* container2_specular.png */,
 				65BB96F0229BCE200093B7EC /* awesomeface.png */,
+				65A9DDC7229FDA6800FB7FB8 /* blending_transparent_window.png */,
 				65BB96EF229BCADA0093B7EC /* container.jpg */,
 				65BB96EE229BCAB20093B7EC /* wall.jpg */,
 			);
