@@ -132,7 +132,7 @@ int main()
     std::vector<Vertex> vertices;
     std::vector<unsigned int>indices;
     
-    const std::string path = "/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/Models/cube.obj";
+    const std::string path = "/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/Models/nanosuit/nanosuit.obj";
     tinyobj::attrib_t attrib;
     std::vector<tinyobj::shape_t> shapes;
     std::vector<tinyobj::material_t> materials;
@@ -210,9 +210,10 @@ int main()
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBufferData(GL_ARRAY_BUFFER, vertices.size()*sizeof(Vertex), &vertices[0], GL_STATIC_DRAW);
 
-    for(int i = 0 ;i<vertices.size();i++){
-        std::cout<<vertices[i].position.x<<" "<<vertices[i].position.y<<" "<<vertices[i].position.z<<std::endl;
-    }
+//    for(int i = 0 ;i<vertices.size();i++){
+////        std::cout<<vertices[i].position.x<<" "<<vertices[i].position.y<<" "<<vertices[i].position.z<<std::endl;
+//    }
+    
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)0);
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(3*sizeof(float)));
@@ -344,7 +345,7 @@ int main()
         glUniformMatrix4fv(glGetUniformLocation(ourShader.ID,"model"),1,GL_FALSE,glm::value_ptr(model));
         
         glBindVertexArray(VAO);
-        glDrawArrays(GL_TRIANGLES, 0, 36);
+        glDrawArrays(GL_TRIANGLES, 0, vertices.size());
 //        glBindVertexArray(0);
 //        glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, &indices[0]);
         
