@@ -19,7 +19,7 @@
 #define TINYOBJLOADER_IMPLEMENTATION // define this in only *one* .cc
 #include "tiny_obj_loader.h"
 
-Camera camera(glm::vec3(0,0,3),glm::vec3(0,1,0),90,0);
+Camera camera(glm::vec3(0,0,3),glm::vec3(0,1,0),180,0);
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow *window);
 void mouse_callback(GLFWwindow *window,double xpos,double ypos);
@@ -86,6 +86,7 @@ int main()
     Shader ourShader("/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/vertShader.vert","/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/fragShader.frag");
     Shader lightShader("/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/vertLightShader.vert","/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/fragLightShader.frag");
     Shader singleShader("/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/vertSingleColorShader.vert","/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/fragSingleColorShader.frag");
+    Shader planeShader("/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/vertPlaneShader.vert","/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/fragPlaneShader.frag");
     // set up vertex data (and buffer(s)) and configure vertex attributes
     // ------------------------------------------------------------------
     float lightVertices[] = {
@@ -132,6 +133,18 @@ int main()
         -0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  0.0f,  0.0f,
         -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f,  1.0f
     };
+    
+    float planeVertices[] = {
+        // positions         // texture Coords (swapped y coordinates because texture is flipped upside down)
+        0.0f,  0.5f,  0.0f,  0.0f,  0.0f,
+        0.0f, -0.5f,  0.0f,  0.0f,  1.0f,
+        1.0f, -0.5f,  0.0f,  1.0f,  1.0f,
+        
+        0.0f,  0.5f,  0.0f,  0.0f,  0.0f,
+        1.0f, -0.5f,  0.0f,  1.0f,  1.0f,
+        1.0f,  0.5f,  0.0f,  1.0f,  0.0f
+    };
+    
     std::vector<Vertex> vertices;
     std::vector<unsigned int>indices;
     
@@ -216,10 +229,6 @@ int main()
     glBindVertexArray(VAO);
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBufferData(GL_ARRAY_BUFFER, vertices.size()*sizeof(Vertex), &vertices[0], GL_STATIC_DRAW);
-
-//    for(int i = 0 ;i<vertices.size();i++){
-////        std::cout<<vertices[i].position.x<<" "<<vertices[i].position.y<<" "<<vertices[i].position.z<<std::endl;
-//    }
     
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)0);
     glEnableVertexAttribArray(0);
@@ -230,12 +239,25 @@ int main()
     
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size()*sizeof(unsigned int), &indices[0], GL_STATIC_DRAW);
+    
+    unsigned int planeVBO,planeVAO;
+    glGenVertexArrays(1,&planeVAO);
+    glGenBuffers(1,&planeVBO);
+    
+    glBindVertexArray(planeVAO);
+    glBindBuffer(GL_ARRAY_BUFFER,planeVBO);
+    glBufferData(GL_ARRAY_BUFFER,sizeof(planeVertices),planeVertices,GL_STATIC_DRAW);
+    
+    glVertexAttribPointer(0,3,GL_FLOAT,GL_FALSE,5*sizeof(float),(void*)0);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(1,2,GL_FLOAT,GL_FALSE,5*sizeof(float),(void*)(3*sizeof(float)));
+    glEnableVertexAttribArray(1);
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
     
-    unsigned int texture[2];
-    glGenTextures(2, texture);
+    unsigned int texture[3];
+    glGenTextures(3, texture);
     
     int width, height, nrChannels;
     unsigned char *data = stbi_load("/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/Textures/matrix.jpg", &width, &height, &nrChannels, 0);
@@ -257,7 +279,7 @@ int main()
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     
-    stbi_set_flip_vertically_on_load(true);
+//    stbi_set_flip_vertically_on_load(true);
     unsigned char *data1 = stbi_load("/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/Textures/container2_specular.png", &width, &height, &nrChannels, 0);
     if (data1)
     {
@@ -270,6 +292,20 @@ int main()
         std::cout << "Failed to load texture" << std::endl;
     }
     stbi_image_free(data1);
+    
+//    stbi_set_flip_vertically_on_load(false);
+    unsigned char *data2 = stbi_load("/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/Textures/grass.png", &width, &height, &nrChannels, 0);
+    if (data2)
+    {
+        glBindTexture(GL_TEXTURE_2D, texture[2]);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data2);
+        glGenerateMipmap(GL_TEXTURE_2D);
+    }
+    else
+    {
+        std::cout << "Failed to load texture" << std::endl;
+    }
+    stbi_image_free(data2);
     
     glm::mat4 model=glm::mat4(1.0f);
     glm::mat4 view=glm::mat4(1.0f);
@@ -398,6 +434,23 @@ int main()
         
         glStencilMask(0xFF);
         glEnable(GL_DEPTH_TEST);
+        
+        glActiveTexture(GL_TEXTURE2);
+        glBindTexture(GL_TEXTURE_2D, texture[2]);
+        planeShader.use();
+        model=glm::mat4(1.0f);
+        model=glm::translate(model, lightPos);
+        model=glm::translate(model, glm::vec3(0,0,1));
+        glUniform1i(glGetUniformLocation(planeShader.ID,"grass"),2);
+        
+        glUniformMatrix4fv(glGetUniformLocation(planeShader.ID,"model"),1,GL_FALSE,glm::value_ptr(model));
+        glUniformMatrix4fv(glGetUniformLocation(planeShader.ID,"view"),1,GL_FALSE,glm::value_ptr(view));
+        glUniformMatrix4fv(glGetUniformLocation(planeShader.ID,"pers"),1,GL_FALSE,glm::value_ptr(pers));
+        
+        glUniform3f(glGetUniformLocation(planeShader.ID,"lightColor"),lightColor.x,lightColor.y,lightColor.z);
+        
+        glBindVertexArray(planeVAO);
+        glDrawArrays(GL_TRIANGLES,0, 6);
         
         
         
