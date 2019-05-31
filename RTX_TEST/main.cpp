@@ -330,10 +330,12 @@ int main()
     
     glBindVertexArray(pointVAO);
     glBindBuffer(GL_ARRAY_BUFFER,pointVBO);
-    glBufferData(GL_ARRAY_BUFFER,sizeof(skyboxVertices),skyboxVertices,GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER,sizeof(lightVertices),lightVertices,GL_STATIC_DRAW);
     
-    glVertexAttribPointer(0,3,GL_FLOAT,GL_FALSE,3*sizeof(float),(void*)0);
+    glVertexAttribPointer(0,3,GL_FLOAT,GL_FALSE,8*sizeof(float),(void*)0);
     glEnableVertexAttribArray(0);
+    glVertexAttribPointer(1,2,GL_FLOAT,GL_FALSE,8*sizeof(float),(void*)(6*sizeof(float)));
+    glEnableVertexAttribArray(1);
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
@@ -495,13 +497,20 @@ int main()
 //        glBindVertexArray(VAO);
 //        glDrawArrays(GL_TRIANGLES,0, vertices.size());
 
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, texture[0]);
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, texture[1]);
+        
         pointShader.use();
         glUniformMatrix4fv(glGetUniformLocation(pointShader.ID,"model"),1,GL_FALSE,glm::value_ptr(model));
         glUniformMatrix4fv(glGetUniformLocation(pointShader.ID,"view"),1,GL_FALSE,glm::value_ptr(view));
         glUniformMatrix4fv(glGetUniformLocation(pointShader.ID,"pers"),1,GL_FALSE,glm::value_ptr(pers));
         
+        glUniform1i(glGetUniformLocation(pointShader.ID,"front"),0);
+        glUniform1i(glGetUniformLocation(pointShader.ID,"back"),1);
         glBindVertexArray(pointVAO);
-        glDrawArrays(GL_POINTS, 0, 36);
+        glDrawArrays(GL_TRIANGLES, 0, 36);
         
 
         
