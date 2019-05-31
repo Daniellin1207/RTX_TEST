@@ -14,9 +14,9 @@ uniform mat4 pers;
 
 void main()
 {
+    tex=aPos;
     vec4 pos=pers * view * model * vec4(aPos, 1.0);
     gl_Position =pos.xyww;
     //   color = aColor;
-    tex=aPos;
     
 }

@@ -34,7 +34,7 @@ struct Light{
     float quadratic;
 };
 
-
+uniform samplerCube skybox;
 uniform Material material;
 uniform Light light[1];
 //uniform sampler2D ourTexture1;
@@ -87,7 +87,9 @@ void main()
 //        color+=vec4(result*attenuation*ratio,1.0f);
 //
 //    }
-    vec3 color=texture(material.diffuse,tex).rgb;
+    vec3 I=normalize(viewPos-pos);
+    vec3 R=-reflect(I,normalize(normal));
+    vec3 color=texture(skybox,R).rgb;
     
 //    float depth=LinearizeDepth(gl_FragCoord.z)/far;
 

@@ -13,9 +13,9 @@ uniform mat4 pers;
 
 void main()
 {
-   gl_Position =pers * view * model * vec4(aPos, 1.0);
     pos=vec3(model*vec4(aPos,1.0f));
-    normal=aNormal;
+    normal=mat3(transpose(inverse(model)))*aNormal;
+    gl_Position =pers * view * model * vec4(aPos, 1.0);
 //   color = aColor;
    tex=aTex;
     
