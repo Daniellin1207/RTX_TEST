@@ -87,8 +87,9 @@ void main()
 //        color+=vec4(result*attenuation*ratio,1.0f);
 //
 //    }
+    float ratio=1.00/1.52;
     vec3 I=normalize(viewPos-pos);
-    vec3 R=-reflect(I,normalize(normal));
+    vec3 R=refract(I,normalize(normal),ratio);
     vec3 color=texture(skybox,R).rgb;
     
 //    float depth=LinearizeDepth(gl_FragCoord.z)/far;
