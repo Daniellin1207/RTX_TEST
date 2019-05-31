@@ -43,5 +43,5 @@ void main()
     for (int i=0; i<9; i++) {
         col+=vec3(texture(grass,tex.st+offsets[i]))*kernel[i];
     }
-    FragColor=vec4(col,1.0f);
+    FragColor=vec4(texture(grass,1-tex).rgb,1.0f);
 }

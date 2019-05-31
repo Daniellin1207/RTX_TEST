@@ -20,7 +20,7 @@
 #include "tiny_obj_loader.h"
 
 
-Camera camera(glm::vec3(0,0,3),glm::vec3(0,1,0),250,0);
+Camera camera(glm::vec3(0,0,0),glm::vec3(0,1,0),250,0);
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow *window);
 void mouse_callback(GLFWwindow *window,double xpos,double ypos);
@@ -41,7 +41,14 @@ bool firstMouse=true;
 float deltaTime=0.0f;
 float lastFrame=0.0f;
 
-
+std::vector<std::string > faces{
+    "/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/Textures/skybox/left.jpg",
+    "/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/Textures/skybox/right.jpg",
+    "/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/Textures/skybox/top.jpg",
+    "/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/Textures/skybox/bottom.jpg",
+    "/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/Textures/skybox/back.jpg",
+    "/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/Textures/skybox/front.jpg",
+};
 
 struct Vertex{
     glm::vec3 position;
@@ -84,7 +91,7 @@ int main()
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_STENCIL_TEST);
     glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
-    glEnable(GL_BLEND);
+//    glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 //    glEnable(GL_CULL_FACE);
 //    glCullFace(GL_BACK);
@@ -92,6 +99,7 @@ int main()
     Shader lightShader("/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/vertLightShader.vert","/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/fragLightShader.frag");
     Shader singleShader("/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/vertSingleColorShader.vert","/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/fragSingleColorShader.frag");
     Shader planeShader("/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/vertPlaneShader.vert","/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/fragPlaneShader.frag");
+    Shader skyboxShader("/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/vertSkyboxShader.vert","/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/fragSkyboxShader.frag");
     // set up vertex data (and buffer(s)) and configure vertex attributes
     // ------------------------------------------------------------------
     float lightVertices[] = {
@@ -148,6 +156,51 @@ int main()
         -1.0f,  1.0f,  0.0f,  0.0f,  0.0f,
         1.0f, -1.0f,  0.0f,  1.0f,  1.0f,
         1.0f,  1.0f,  0.0f,  1.0f,  0.0f
+    };
+    
+    float skyboxVertices[] = {
+        // positions
+        -1.0f,  1.0f, -1.0f,
+        -1.0f, -1.0f, -1.0f,
+        1.0f, -1.0f, -1.0f,
+        1.0f, -1.0f, -1.0f,
+        1.0f,  1.0f, -1.0f,
+        -1.0f,  1.0f, -1.0f,
+        
+        -1.0f, -1.0f,  1.0f,
+        -1.0f, -1.0f, -1.0f,
+        -1.0f,  1.0f, -1.0f,
+        -1.0f,  1.0f, -1.0f,
+        -1.0f,  1.0f,  1.0f,
+        -1.0f, -1.0f,  1.0f,
+        
+        1.0f, -1.0f, -1.0f,
+        1.0f, -1.0f,  1.0f,
+        1.0f,  1.0f,  1.0f,
+        1.0f,  1.0f,  1.0f,
+        1.0f,  1.0f, -1.0f,
+        1.0f, -1.0f, -1.0f,
+        
+        -1.0f, -1.0f,  1.0f,
+        -1.0f,  1.0f,  1.0f,
+        1.0f,  1.0f,  1.0f,
+        1.0f,  1.0f,  1.0f,
+        1.0f, -1.0f,  1.0f,
+        -1.0f, -1.0f,  1.0f,
+        
+        -1.0f,  1.0f, -1.0f,
+        1.0f,  1.0f, -1.0f,
+        1.0f,  1.0f,  1.0f,
+        1.0f,  1.0f,  1.0f,
+        -1.0f,  1.0f,  1.0f,
+        -1.0f,  1.0f, -1.0f,
+        
+        -1.0f, -1.0f, -1.0f,
+        -1.0f, -1.0f,  1.0f,
+        1.0f, -1.0f, -1.0f,
+        1.0f, -1.0f, -1.0f,
+        -1.0f, -1.0f,  1.0f,
+        1.0f, -1.0f,  1.0f
     };
     
     std::vector<Vertex> vertices;
@@ -257,12 +310,26 @@ int main()
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(1,2,GL_FLOAT,GL_FALSE,5*sizeof(float),(void*)(3*sizeof(float)));
     glEnableVertexAttribArray(1);
+    
+    unsigned int skyboxVBO,skyboxVAO;
+    glGenVertexArrays(1,&skyboxVAO);
+    glGenBuffers(1,&skyboxVBO);
+    
+    glBindVertexArray(skyboxVAO);
+    glBindBuffer(GL_ARRAY_BUFFER,skyboxVBO);
+    glBufferData(GL_ARRAY_BUFFER,sizeof(skyboxVertices),skyboxVertices,GL_STATIC_DRAW);
+    
+    glVertexAttribPointer(0,3,GL_FLOAT,GL_FALSE,3*sizeof(float),(void*)0);
+    glEnableVertexAttribArray(0);
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
     
     unsigned int texture[3];
     glGenTextures(3, texture);
+    
+    unsigned int textureID;
+    glGenTextures(1,&textureID);
     
     int width, height, nrChannels;
     unsigned char *data = stbi_load("/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/Textures/matrix.jpg", &width, &height, &nrChannels, 0);
@@ -311,6 +378,31 @@ int main()
         std::cout << "Failed to load texture" << std::endl;
     }
     stbi_image_free(data2);
+    
+    glBindTexture(GL_TEXTURE_CUBE_MAP, textureID);
+    for (unsigned int i=0; i<faces.size(); i++)
+    {
+        unsigned char *data = stbi_load(faces[i].c_str(), &width, &height, &nrChannels, 0);
+        std::cout<<faces[i].c_str()<<std::endl;
+        if (data)
+        {
+            glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X+i, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+            stbi_image_free(data);
+            
+        }
+        else
+        {
+            std::cout << "Failed to load texture" << std::endl;
+            stbi_image_free(data);
+        }
+    }
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    
     
     glm::mat4 model=glm::mat4(1.0f);
     glm::mat4 view=glm::mat4(1.0f);
@@ -411,23 +503,39 @@ int main()
 //        glStencilFunc(GL_ALWAYS, 1, 0xFF);
 //        glStencilMask(0xFF);
         
-        
-        
         ourShader.use();
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, texture[0]);
         model=glm::mat4(1.0f);
         model=glm::translate(model, lightPos);
         model=glm::scale(model, glm::vec3(0.2f));
+        view=camera.GetViewMatrix();
         glUniformMatrix4fv(glGetUniformLocation(ourShader.ID,"model"),1,GL_FALSE,glm::value_ptr(model));
         glUniformMatrix4fv(glGetUniformLocation(ourShader.ID,"view"),1,GL_FALSE,glm::value_ptr(view));
         glUniformMatrix4fv(glGetUniformLocation(ourShader.ID,"pers"),1,GL_FALSE,glm::value_ptr(pers));
-
+        
         glUniform1i(glGetUniformLocation(ourShader.ID,"material.diffuse"),0);
         glUniform3f(glGetUniformLocation(ourShader.ID,"lightColor"),lightColor.x,lightColor.y,lightColor.z);
-
+        
         glBindVertexArray(VAO);
         glDrawArrays(GL_TRIANGLES,0, vertices.size());
+        
+        skyboxShader.use();
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_CUBE_MAP,textureID);
+        model=glm::mat4(1.0f);
+        view=glm::mat4(glm::mat3(camera.GetViewMatrix()));
+//        model=glm::translate(model, lightPos);
+//        model=glm::scale(model, glm::vec3(3.0f));
+//        view=glm::mat4(glm::mat3(camera.GetViewMatrix()));
+        glUniform1i(glGetUniformLocation(skyboxShader.ID,"skybox"),0);
+        glUniformMatrix4fv(glGetUniformLocation(skyboxShader.ID,"model"),1,GL_FALSE,glm::value_ptr(model));
+        glUniformMatrix4fv(glGetUniformLocation(skyboxShader.ID,"view"),1,GL_FALSE,glm::value_ptr(view));
+        glUniformMatrix4fv(glGetUniformLocation(skyboxShader.ID,"pers"),1,GL_FALSE,glm::value_ptr(pers));
+        glBindVertexArray(skyboxVAO);
+        glDrawArrays(GL_TRIANGLES, 0, 36);
+        
+
         
 //        glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
 //        glStencilMask(0x00);
@@ -451,19 +559,10 @@ int main()
         glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
         
-        glActiveTexture(GL_TEXTURE2);
+        glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, textureColorBuffer);
         planeShader.use();
-        model=glm::mat4(1.0f);
-        model=glm::translate(model, lightPos);
-        model=glm::translate(model, glm::vec3(0,0,-2));
-        glUniform1i(glGetUniformLocation(planeShader.ID,"grass"),2);
-        
-        glUniformMatrix4fv(glGetUniformLocation(planeShader.ID,"model"),1,GL_FALSE,glm::value_ptr(model));
-        glUniformMatrix4fv(glGetUniformLocation(planeShader.ID,"view"),1,GL_FALSE,glm::value_ptr(view));
-        glUniformMatrix4fv(glGetUniformLocation(planeShader.ID,"pers"),1,GL_FALSE,glm::value_ptr(pers));
-        
-        glUniform3f(glGetUniformLocation(planeShader.ID,"lightColor"),lightColor.x,lightColor.y,lightColor.z);
+        glUniform1i(glGetUniformLocation(planeShader.ID,"grass"),0);
         
         glBindVertexArray(planeVAO);
         glDrawArrays(GL_TRIANGLES,0, 6);
