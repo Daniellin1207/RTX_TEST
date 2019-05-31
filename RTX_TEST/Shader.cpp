@@ -62,6 +62,7 @@ void Shader::createShader(const char* vertCode,const char* fragCode){
     if(!success){
         glGetShaderInfoLog(vertex,1024,NULL,infoLog);
         cout<<"ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << endl;
+        cout<<path<<endl;
     }
     
     fragment=glCreateShader(GL_FRAGMENT_SHADER);

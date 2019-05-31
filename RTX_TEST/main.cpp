@@ -95,11 +95,13 @@ int main()
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 //    glEnable(GL_CULL_FACE);
 //    glCullFace(GL_BACK);
+    glEnable(GL_PROGRAM_POINT_SIZE);
     Shader ourShader("/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/vertShader.vert","/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/fragShader.frag");
     Shader lightShader("/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/vertLightShader.vert","/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/fragLightShader.frag");
     Shader singleShader("/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/vertSingleColorShader.vert","/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/fragSingleColorShader.frag");
     Shader planeShader("/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/vertPlaneShader.vert","/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/fragPlaneShader.frag");
     Shader skyboxShader("/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/vertSkyboxShader.vert","/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/fragSkyboxShader.frag");
+    Shader pointShader("/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/vertPointShader.vert","/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/fragPointShader.frag");
     // set up vertex data (and buffer(s)) and configure vertex attributes
     // ------------------------------------------------------------------
     float lightVertices[] = {
@@ -321,6 +323,17 @@ int main()
     
     glVertexAttribPointer(0,3,GL_FLOAT,GL_FALSE,3*sizeof(float),(void*)0);
     glEnableVertexAttribArray(0);
+    
+    unsigned int pointVBO,pointVAO;
+    glGenVertexArrays(1,&pointVAO);
+    glGenBuffers(1,&pointVBO);
+    
+    glBindVertexArray(pointVAO);
+    glBindBuffer(GL_ARRAY_BUFFER,pointVBO);
+    glBufferData(GL_ARRAY_BUFFER,sizeof(skyboxVertices),skyboxVertices,GL_STATIC_DRAW);
+    
+    glVertexAttribPointer(0,3,GL_FLOAT,GL_FALSE,3*sizeof(float),(void*)0);
+    glEnableVertexAttribArray(0);
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
@@ -445,42 +458,50 @@ int main()
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         view=camera.GetViewMatrix();
         pers=glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 1000.0f);
-
-        glDepthFunc(GL_LEQUAL);
-        skyboxShader.use();
-        glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_CUBE_MAP,textureID);
         model=glm::mat4(1.0f);
-        view=glm::mat4(glm::mat3(camera.GetViewMatrix()));
-        //        model=glm::translate(model, lightPos);
-        //        model=glm::scale(model, glm::vec3(3.0f));
-        //        view=glm::mat4(glm::mat3(camera.GetViewMatrix()));
-        glUniform1i(glGetUniformLocation(skyboxShader.ID,"skybox"),1);
-        glUniformMatrix4fv(glGetUniformLocation(skyboxShader.ID,"model"),1,GL_FALSE,glm::value_ptr(model));
-        glUniformMatrix4fv(glGetUniformLocation(skyboxShader.ID,"view"),1,GL_FALSE,glm::value_ptr(view));
-        glUniformMatrix4fv(glGetUniformLocation(skyboxShader.ID,"pers"),1,GL_FALSE,glm::value_ptr(pers));
-        glBindVertexArray(skyboxVAO);
-        glDrawArrays(GL_TRIANGLES, 0, 36);
-        glDepthFunc(GL_LESS);
+
+//        glDepthFunc(GL_LEQUAL);
+//        skyboxShader.use();
+//        glActiveTexture(GL_TEXTURE1);
+//        glBindTexture(GL_TEXTURE_CUBE_MAP,textureID);
+//        model=glm::mat4(1.0f);
+//        view=glm::mat4(glm::mat3(camera.GetViewMatrix()));
+//        //        model=glm::translate(model, lightPos);
+//        //        model=glm::scale(model, glm::vec3(3.0f));
+//        //        view=glm::mat4(glm::mat3(camera.GetViewMatrix()));
+//        glUniform1i(glGetUniformLocation(skyboxShader.ID,"skybox"),1);
+//        glUniformMatrix4fv(glGetUniformLocation(skyboxShader.ID,"model"),1,GL_FALSE,glm::value_ptr(model));
+//        glUniformMatrix4fv(glGetUniformLocation(skyboxShader.ID,"view"),1,GL_FALSE,glm::value_ptr(view));
+//        glUniformMatrix4fv(glGetUniformLocation(skyboxShader.ID,"pers"),1,GL_FALSE,glm::value_ptr(pers));
+//        glBindVertexArray(skyboxVAO);
+//        glDrawArrays(GL_TRIANGLES, 0, 36);
+//        glDepthFunc(GL_LESS);
+//
+//        ourShader.use();
+//        glActiveTexture(GL_TEXTURE0);
+//        glBindTexture(GL_TEXTURE_2D, texture[0]);
+//        model=glm::mat4(1.0f);
+//        model=glm::translate(model, lightPos);
+//        model=glm::scale(model, glm::vec3(0.2f));
+//        view=camera.GetViewMatrix();
+//        glUniformMatrix4fv(glGetUniformLocation(ourShader.ID,"model"),1,GL_FALSE,glm::value_ptr(model));
+//        glUniformMatrix4fv(glGetUniformLocation(ourShader.ID,"view"),1,GL_FALSE,glm::value_ptr(view));
+//        glUniformMatrix4fv(glGetUniformLocation(ourShader.ID,"pers"),1,GL_FALSE,glm::value_ptr(pers));
+//
+//        glUniform1i(glGetUniformLocation(ourShader.ID,"skybox"),0);
+//        glUniform3f(glGetUniformLocation(ourShader.ID,"lightColor"),lightColor.x,lightColor.y,lightColor.z);
+//        glUniform3f(glGetUniformLocation(ourShader.ID,"viewPos"),camera.Position.x,camera.Position.y,camera.Position.z);
+//
+//        glBindVertexArray(VAO);
+//        glDrawArrays(GL_TRIANGLES,0, vertices.size());
+
+        pointShader.use();
+        glUniformMatrix4fv(glGetUniformLocation(pointShader.ID,"model"),1,GL_FALSE,glm::value_ptr(model));
+        glUniformMatrix4fv(glGetUniformLocation(pointShader.ID,"view"),1,GL_FALSE,glm::value_ptr(view));
+        glUniformMatrix4fv(glGetUniformLocation(pointShader.ID,"pers"),1,GL_FALSE,glm::value_ptr(pers));
         
-        ourShader.use();
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, texture[0]);
-        model=glm::mat4(1.0f);
-        model=glm::translate(model, lightPos);
-        model=glm::scale(model, glm::vec3(0.2f));
-        view=camera.GetViewMatrix();
-        glUniformMatrix4fv(glGetUniformLocation(ourShader.ID,"model"),1,GL_FALSE,glm::value_ptr(model));
-        glUniformMatrix4fv(glGetUniformLocation(ourShader.ID,"view"),1,GL_FALSE,glm::value_ptr(view));
-        glUniformMatrix4fv(glGetUniformLocation(ourShader.ID,"pers"),1,GL_FALSE,glm::value_ptr(pers));
-
-        glUniform1i(glGetUniformLocation(ourShader.ID,"skybox"),0);
-        glUniform3f(glGetUniformLocation(ourShader.ID,"lightColor"),lightColor.x,lightColor.y,lightColor.z);
-        glUniform3f(glGetUniformLocation(ourShader.ID,"viewPos"),camera.Position.x,camera.Position.y,camera.Position.z);
-
-        glBindVertexArray(VAO);
-        glDrawArrays(GL_TRIANGLES,0, vertices.size());
-
+        glBindVertexArray(pointVAO);
+        glDrawArrays(GL_POINTS, 0, 36);
         
 
         
