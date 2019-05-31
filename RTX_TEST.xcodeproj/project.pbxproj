@@ -5665,6 +5665,8 @@
 		65E366A122A0C3E20010A2E1 /* back.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = back.jpg; sourceTree = "<group>"; };
 		65E366A222A0C3E20010A2E1 /* right.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = right.jpg; sourceTree = "<group>"; };
 		65E366A322A0C3E20010A2E1 /* front.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = front.jpg; sourceTree = "<group>"; };
+		65E366A422A10B9E0010A2E1 /* vertPointShader.vert */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.glsl; path = vertPointShader.vert; sourceTree = "<group>"; };
+		65E366A522A10BAE0010A2E1 /* fragPointShader.frag */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.glsl; path = fragPointShader.frag; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -5728,6 +5730,8 @@
 				6501CF28229FD1FA0066F8CF /* fragPlaneShader.frag */,
 				65E3669A22A0C1B30010A2E1 /* vertSkyboxShader.vert */,
 				65E3669B22A0C1D10010A2E1 /* fragSkyboxShader.frag */,
+				65E366A422A10B9E0010A2E1 /* vertPointShader.vert */,
+				65E366A522A10BAE0010A2E1 /* fragPointShader.frag */,
 			);
 			path = RTX_TEST;
 			sourceTree = "<group>";

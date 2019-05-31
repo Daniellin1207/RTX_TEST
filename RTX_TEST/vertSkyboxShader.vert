@@ -9,8 +9,11 @@ layout (location = 0) in vec3 aPos;
 out vec3 tex;
 
 uniform mat4 model;
-uniform mat4 view;
-uniform mat4 pers;
+layout(std140) uniform Matrices{
+    uniform mat4 view;
+    uniform mat4 pers;
+    
+};
 
 void main()
 {

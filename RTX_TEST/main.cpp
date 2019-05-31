@@ -440,6 +440,27 @@ int main()
     
     glFramebufferTexture2D(GL_FRAMEBUFFER,GL_COLOR_ATTACHMENT0,GL_TEXTURE_2D,textureColorBuffer,0);
     glBindFramebuffer(GL_FRAMEBUFFER,0);
+    
+    //高级OpenGL/高级GLSL/Uniform块布局
+//    1. 所有shader中将相同的uniform部分写到一个块中，需要计算占地大小。使用时，直接使用变量名称。
+//    2. 提取所有shader中相同的块的名称，使用glGetUniformBlockIndex();
+//    3. 再通过glUniformBlockBinding()将
+    
+    unsigned int uniformBlockIndexOur=glGetUniformBlockIndex(ourShader.ID,"Matrices");
+    unsigned int uniformBlockIndexSkybox=glGetUniformBlockIndex(skyboxShader.ID,"Matrices");
+    unsigned int uniformBlockIndexPoint=glGetUniformBlockIndex(pointShader.ID,"Matrices");
+    glUniformBlockBinding(ourShader.ID,uniformBlockIndexOur,0);
+    glUniformBlockBinding(skyboxShader.ID,uniformBlockIndexSkybox,0);
+    glUniformBlockBinding(pointShader.ID,uniformBlockIndexPoint,0);
+    
+    unsigned int uboMatrices;
+    glGenBuffers(1,&uboMatrices);
+    glBindBuffer(GL_UNIFORM_BUFFER,uboMatrices);
+    glBufferData(GL_UNIFORM_BUFFER,2*sizeof(glm::mat4),NULL,GL_STATIC_DRAW);
+    glBindBufferRange(GL_UNIFORM_BUFFER,0,uboMatrices,0,2*sizeof(glm::mat4));
+    pers=glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 1000.0f);
+    glBufferSubData(GL_UNIFORM_BUFFER,sizeof(glm::mat4),sizeof(glm::mat4),glm::value_ptr(pers));
+    glBindBuffer(GL_UNIFORM_BUFFER,0);
     // render loop
     // -----------
     while (!glfwWindowShouldClose(window))
@@ -458,44 +479,44 @@ int main()
         // ------
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        view=camera.GetViewMatrix();
-        pers=glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 1000.0f);
-        model=glm::mat4(1.0f);
+        
+        glDepthFunc(GL_LEQUAL);
+        skyboxShader.use();
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_CUBE_MAP,textureID);
+        
+        view=glm::mat4(glm::mat3(camera.GetViewMatrix()));
+        glBindBuffer(GL_UNIFORM_BUFFER,uboMatrices);
+        glBufferSubData(GL_UNIFORM_BUFFER,0,sizeof(glm::mat4),glm::value_ptr(view));
+        glBindBuffer(GL_UNIFORM_BUFFER,0);
+        
+        glUniform1i(glGetUniformLocation(skyboxShader.ID,"skybox"),1);
+        glUniformMatrix4fv(glGetUniformLocation(skyboxShader.ID,"model"),1,GL_FALSE,glm::value_ptr(model));
+        glBindVertexArray(skyboxVAO);
+        glDrawArrays(GL_TRIANGLES, 0, 36);
+        glDepthFunc(GL_LESS);
 
-//        glDepthFunc(GL_LEQUAL);
-//        skyboxShader.use();
-//        glActiveTexture(GL_TEXTURE1);
-//        glBindTexture(GL_TEXTURE_CUBE_MAP,textureID);
-//        model=glm::mat4(1.0f);
-//        view=glm::mat4(glm::mat3(camera.GetViewMatrix()));
-//        //        model=glm::translate(model, lightPos);
-//        //        model=glm::scale(model, glm::vec3(3.0f));
-//        //        view=glm::mat4(glm::mat3(camera.GetViewMatrix()));
-//        glUniform1i(glGetUniformLocation(skyboxShader.ID,"skybox"),1);
-//        glUniformMatrix4fv(glGetUniformLocation(skyboxShader.ID,"model"),1,GL_FALSE,glm::value_ptr(model));
-//        glUniformMatrix4fv(glGetUniformLocation(skyboxShader.ID,"view"),1,GL_FALSE,glm::value_ptr(view));
-//        glUniformMatrix4fv(glGetUniformLocation(skyboxShader.ID,"pers"),1,GL_FALSE,glm::value_ptr(pers));
-//        glBindVertexArray(skyboxVAO);
-//        glDrawArrays(GL_TRIANGLES, 0, 36);
-//        glDepthFunc(GL_LESS);
-//
-//        ourShader.use();
-//        glActiveTexture(GL_TEXTURE0);
-//        glBindTexture(GL_TEXTURE_2D, texture[0]);
-//        model=glm::mat4(1.0f);
-//        model=glm::translate(model, lightPos);
-//        model=glm::scale(model, glm::vec3(0.2f));
-//        view=camera.GetViewMatrix();
-//        glUniformMatrix4fv(glGetUniformLocation(ourShader.ID,"model"),1,GL_FALSE,glm::value_ptr(model));
-//        glUniformMatrix4fv(glGetUniformLocation(ourShader.ID,"view"),1,GL_FALSE,glm::value_ptr(view));
-//        glUniformMatrix4fv(glGetUniformLocation(ourShader.ID,"pers"),1,GL_FALSE,glm::value_ptr(pers));
-//
-//        glUniform1i(glGetUniformLocation(ourShader.ID,"skybox"),0);
-//        glUniform3f(glGetUniformLocation(ourShader.ID,"lightColor"),lightColor.x,lightColor.y,lightColor.z);
-//        glUniform3f(glGetUniformLocation(ourShader.ID,"viewPos"),camera.Position.x,camera.Position.y,camera.Position.z);
-//
-//        glBindVertexArray(VAO);
-//        glDrawArrays(GL_TRIANGLES,0, vertices.size());
+        
+        view=camera.GetViewMatrix();
+        glBindBuffer(GL_UNIFORM_BUFFER,uboMatrices);
+        glBufferSubData(GL_UNIFORM_BUFFER,0,sizeof(glm::mat4),glm::value_ptr(view));
+        glBindBuffer(GL_UNIFORM_BUFFER,0);
+        
+        ourShader.use();
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, texture[0]);
+        model=glm::mat4(1.0f);
+        model=glm::translate(model, lightPos);
+        model=glm::scale(model, glm::vec3(0.2f));
+        view=camera.GetViewMatrix();
+        glUniformMatrix4fv(glGetUniformLocation(ourShader.ID,"model"),1,GL_FALSE,glm::value_ptr(model));
+
+        glUniform1i(glGetUniformLocation(ourShader.ID,"skybox"),0);
+        glUniform3f(glGetUniformLocation(ourShader.ID,"lightColor"),lightColor.x,lightColor.y,lightColor.z);
+        glUniform3f(glGetUniformLocation(ourShader.ID,"viewPos"),camera.Position.x,camera.Position.y,camera.Position.z);
+
+        glBindVertexArray(VAO);
+        glDrawArrays(GL_TRIANGLES,0, vertices.size());
 
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, texture[0]);
@@ -504,8 +525,6 @@ int main()
         
         pointShader.use();
         glUniformMatrix4fv(glGetUniformLocation(pointShader.ID,"model"),1,GL_FALSE,glm::value_ptr(model));
-        glUniformMatrix4fv(glGetUniformLocation(pointShader.ID,"view"),1,GL_FALSE,glm::value_ptr(view));
-        glUniformMatrix4fv(glGetUniformLocation(pointShader.ID,"pers"),1,GL_FALSE,glm::value_ptr(pers));
         
         glUniform1i(glGetUniformLocation(pointShader.ID,"front"),0);
         glUniform1i(glGetUniformLocation(pointShader.ID,"back"),1);
