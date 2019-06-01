@@ -20,7 +20,7 @@
 #include "tiny_obj_loader.h"
 
 
-Camera camera(glm::vec3(0,0,0),glm::vec3(0,1,0),250,0);
+Camera camera(glm::vec3(-45,0,0),glm::vec3(0,1,0),250,0);
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow *window);
 void mouse_callback(GLFWwindow *window,double xpos,double ypos);
@@ -270,6 +270,31 @@ int main()
         glm::vec3(-1.3f,  1.0f, -1.5f)
     };
     
+    unsigned int amount=10000;
+    glm::mat4 modelMatrices[amount];
+    srand(glfwGetTime());
+    float radius=50.0;
+    float offset=2.5f;
+    for (unsigned int i=0; i<amount; i++) {
+        glm::mat4 model=glm::mat4(1.0f);
+        float angle=(float)i/(float)amount*360.0f;
+        float displacement=(rand()%(int)(2*offset*100))/100.0f-offset;
+        float x=sin(angle)*radius+displacement;
+        displacement=(rand()%(int)(2*offset*100))/100.0f-offset;
+        float y=displacement*0.4f;
+        displacement=(rand()%(int)(2*offset*100))/100.0f-offset;
+        float z=cos(angle)*radius+displacement;
+        model=glm::translate(model, glm::vec3(x,y,z));
+
+        float scale=(rand()%20)/100.0f+0.05;
+        model=glm::scale(model,glm::vec3(scale));
+
+        float rotAngle=(rand()%360);
+        model=glm::rotate(model,rotAngle,glm::vec3(0.4,0.6,0.8));
+
+        modelMatrices[i]=model;
+    }
+    
 //    int indices[]={
 //        0,1,2,
 //        3,0,2
@@ -286,6 +311,10 @@ int main()
     glBufferData(GL_ARRAY_BUFFER, sizeof(lightVertices), lightVertices, GL_STATIC_DRAW);
     glVertexAttribPointer(0,3,GL_FLOAT,GL_FALSE,8*sizeof(float),(void*)0);
     glEnableVertexAttribArray(0);
+    glVertexAttribPointer(1,3,GL_FLOAT,GL_FALSE,8*sizeof(float),(void*)(3*sizeof(float)));
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(2,2,GL_FLOAT,GL_FALSE,8*sizeof(float),(void*)(6*sizeof(float)));
+    glEnableVertexAttribArray(2);
     
     
     unsigned int VBO, VAO;
@@ -321,24 +350,25 @@ int main()
     glEnableVertexAttribArray(1);
     glVertexAttribPointer(1,2,GL_FLOAT,GL_FALSE,5*sizeof(float),(void*)(3*sizeof(float)));
     
-    glm::vec2 translations[100];
-    int index=0;
-    float offset=0.1f;
-    for (int y= -10; y<10; y+=2) {
-        for (int x=-10; x<10; x+=2) {
-            glm::vec2 translation;
-            translation.x=(float)x/10.0f+offset;
-            translation.y=(float)y/10.0f+offset;
-            translations[index++]=translation;
-        }
-    }
-    unsigned int instanceVBO;
-    glGenBuffers(1,&instanceVBO);
-    glBindBuffer(GL_ARRAY_BUFFER,instanceVBO);
-    glEnableVertexAttribArray(2);
-    glBufferData(GL_ARRAY_BUFFER,sizeof(glm::vec2)*100,&translations[0],GL_STATIC_DRAW);
-    glVertexAttribPointer(2,2,GL_FLOAT,GL_FALSE,2*sizeof(float),(void*)0);
-    glVertexAttribDivisor(2,1);
+//    glm::vec2 translations[100];
+//    int index=0;
+//    float offset=0.1f;
+//    for (int y= -10; y<10; y+=2) {
+//        for (int x=-10; x<10; x+=2) {
+//            glm::vec2 translation;
+//            translation.x=(float)x/10.0f+offset;
+//            translation.y=(float)y/10.0f+offset;
+//            translations[index++]=translation;
+//        }
+//    }
+    
+//    unsigned int instanceVBO;
+//    glGenBuffers(1,&instanceVBO);
+//    glBindBuffer(GL_ARRAY_BUFFER,instanceVBO);
+//    glEnableVertexAttribArray(2);
+//    glBufferData(GL_ARRAY_BUFFER,sizeof(glm::vec2)*100,&translations[0],GL_STATIC_DRAW);
+//    glVertexAttribPointer(2,2,GL_FLOAT,GL_FALSE,2*sizeof(float),(void*)0);
+//    glVertexAttribDivisor(2,1);
     
     unsigned int skyboxVBO,skyboxVAO;
     glGenVertexArrays(1,&skyboxVAO);
@@ -483,21 +513,21 @@ int main()
     glFramebufferTexture2D(GL_FRAMEBUFFER,GL_COLOR_ATTACHMENT0,GL_TEXTURE_2D,textureColorBuffer,0);
     glBindFramebuffer(GL_FRAMEBUFFER,0);
     
-    unsigned int uniformBlockIndexOur=glGetUniformBlockIndex(ourShader.ID,"Matrices");
-    unsigned int uniformBlockIndexSkybox=glGetUniformBlockIndex(skyboxShader.ID,"Matrices");
-    unsigned int uniformBlockIndexPoint=glGetUniformBlockIndex(pointShader.ID,"Matrices");
-    glUniformBlockBinding(ourShader.ID,uniformBlockIndexOur,0);
-    glUniformBlockBinding(skyboxShader.ID,uniformBlockIndexSkybox,0);
-    glUniformBlockBinding(pointShader.ID,uniformBlockIndexPoint,0);
-    
-    unsigned int uboMatrices;
-    glGenBuffers(1,&uboMatrices);
-    glBindBuffer(GL_UNIFORM_BUFFER,uboMatrices);
-    glBufferData(GL_UNIFORM_BUFFER,2*sizeof(glm::mat4),NULL,GL_STATIC_DRAW);
-    glBindBufferRange(GL_UNIFORM_BUFFER,0,uboMatrices,0,2*sizeof(glm::mat4));
-    pers=glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 1000.0f);
-    glBufferSubData(GL_UNIFORM_BUFFER,sizeof(glm::mat4),sizeof(glm::mat4),glm::value_ptr(pers));
-    glBindBuffer(GL_UNIFORM_BUFFER,0);
+//    unsigned int uniformBlockIndexOur=glGetUniformBlockIndex(ourShader.ID,"Matrices");
+//    unsigned int uniformBlockIndexSkybox=glGetUniformBlockIndex(skyboxShader.ID,"Matrices");
+//    unsigned int uniformBlockIndexPoint=glGetUniformBlockIndex(pointShader.ID,"Matrices");
+//    glUniformBlockBinding(ourShader.ID,uniformBlockIndexOur,0);
+//    glUniformBlockBinding(skyboxShader.ID,uniformBlockIndexSkybox,0);
+//    glUniformBlockBinding(pointShader.ID,uniformBlockIndexPoint,0);
+//    
+//    unsigned int uboMatrices;
+//    glGenBuffers(1,&uboMatrices);
+//    glBindBuffer(GL_UNIFORM_BUFFER,uboMatrices);
+//    glBufferData(GL_UNIFORM_BUFFER,2*sizeof(glm::mat4),NULL,GL_STATIC_DRAW);
+//    glBindBufferRange(GL_UNIFORM_BUFFER,0,uboMatrices,0,2*sizeof(glm::mat4));
+//    pers=glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 1000.0f);
+//    glBufferSubData(GL_UNIFORM_BUFFER,sizeof(glm::mat4),sizeof(glm::mat4),glm::value_ptr(pers));
+//    glBindBuffer(GL_UNIFORM_BUFFER,0);
     
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, texture[0]);
@@ -528,18 +558,31 @@ int main()
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         
-        planeShader.use();
-        for (unsigned int i=0; i<100; i++) {
-            std::stringstream ss;
-            std::string index;
-            ss<<i;
-            index=ss.str();
-            glUniform2f(glGetUniformLocation(planeShader.ID,("offsets["+index+"]").c_str()),translations[i].x,translations[i].y);
-        }
-        glBindVertexArray(planeVAO);
-        glDrawArraysInstanced(GL_TRIANGLES,0,6,100);
+//        planeShader.use();
+//        for (unsigned int i=0; i<100; i++) {
+//            std::stringstream ss;
+//            std::string index;
+//            ss<<i;
+//            index=ss.str();
+//            glUniform2f(glGetUniformLocation(planeShader.ID,("offsets["+index+"]").c_str()),translations[i].x,translations[i].y);
+//        }
+//        glBindVertexArray(planeVAO);
+//        glDrawArraysInstanced(GL_TRIANGLES,0,6,100);
         
-//
+        lightShader.use();
+        view=camera.GetViewMatrix();
+        pers=glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 1000.0f);
+        glUniformMatrix4fv(glGetUniformLocation(lightShader.ID,"view"),1,GL_FALSE,glm::value_ptr(view));
+        glUniformMatrix4fv(glGetUniformLocation(lightShader.ID,"pers"),1,GL_FALSE,glm::value_ptr(pers));
+        glUniform1i(glGetUniformLocation(lightShader.ID,"grass"),0);
+        for (int i = 0; i<amount; i++) {
+            
+            glUniformMatrix4fv(glGetUniformLocation(lightShader.ID,"model"),1,GL_FALSE,glm::value_ptr(modelMatrices[i]));
+            
+            glBindVertexArray(lightVAO);
+            glDrawArrays(GL_TRIANGLES, 0, 36);
+        }
+
 //        glDepthFunc(GL_LEQUAL);
 //        skyboxShader.use();
 //        view=glm::mat4(glm::mat3(camera.GetViewMatrix()));
