@@ -3,10 +3,14 @@
 layout (points) in;
 layout (triangle_strip,max_vertices=5) out;
 
-in vec3 vColor[];
+//in vec3 vColor[];
+in VS_OUT{
+    vec3 vColor;
+}gs_in[];
+
 out  vec3 fColor;
 void build_house(vec4 position){
-    fColor=vColor[0];
+    fColor=gs_in[0].vColor;
     gl_Position=position+vec4(-0.2,-0.2,0,0);
     EmitVertex();
     gl_Position=position+vec4(0.2,-0.2,0,0);
