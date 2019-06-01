@@ -24,7 +24,7 @@
     World
     
 
-**PS.关于Readme编写**  
+**PS.关于Readme编写  
 
 1. 附上Readme添加icon方法:  
 
