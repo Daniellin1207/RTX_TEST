@@ -24,7 +24,7 @@
     World
     
 
-**PS.关于Readme编写  
+**PS.关于Readme编写**  
 
 1. 附上Readme添加icon方法:  
 
@@ -34,7 +34,7 @@
     https://lpd-ios.github.io/2017/05/03/GitHub-Badge-Introduction/  
     https://github.com/EyreFree/EFArticles  
     
-2. Readme字体格式等方法:**
+2. Readme字体格式等方法:
 
     a. 参考内容:  
     https://github.com/guodongxiaren/README#%E6%96%87%E6%9C%AC  
