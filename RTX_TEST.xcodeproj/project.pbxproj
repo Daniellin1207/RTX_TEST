@@ -28,7 +28,6 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		6501CF22229F673F0066F8CF /* libassimp.5.0.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libassimp.5.0.0.dylib; path = ../assimp/lib/libassimp.5.0.0.dylib; sourceTree = "<group>"; };
 		6501CF25229FCAD80066F8CF /* vertSingleColorShader.vert */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.glsl; path = vertSingleColorShader.vert; sourceTree = "<group>"; };
 		6501CF26229FCAEA0066F8CF /* fragSingleColorShader.frag */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.glsl; path = fragSingleColorShader.frag; sourceTree = "<group>"; };
 		6501CF27229FD1E50066F8CF /* vertPlaneShader.vert */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.glsl; path = vertPlaneShader.vert; sourceTree = "<group>"; };
@@ -5747,7 +5746,6 @@
 		65BB8078229A7E890093B7EC /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				6501CF22229F673F0066F8CF /* libassimp.5.0.0.dylib */,
 				65BB807B229A7EBD0093B7EC /* Cellar */,
 				65BB8079229A7E890093B7EC /* OpenGL.framework */,
 			);
