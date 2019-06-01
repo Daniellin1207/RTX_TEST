@@ -152,13 +152,13 @@ int main()
     
     float planeVertices[] = {
         // positions         // texture Coords (swapped y coordinates because texture is flipped upside down)
-        -1.0f, 1.0f,  0.0f,  0.0f,  0.0f,
-        -1.0f, -1.0f,  0.0f,  0.0f,  1.0f,
-        1.0f, -1.0f,  0.0f,  1.0f,  1.0f,
+        -0.05f,  0.05,  0.0f,  0.0f,  0.0f,
+        -0.05f, -0.05,  0.0f,  0.0f,  1.0f,
+         0.05f, -0.05,  0.0f,  1.0f,  1.0f,
         
-        -1.0f,  1.0f,  0.0f,  0.0f,  0.0f,
-        1.0f, -1.0f,  0.0f,  1.0f,  1.0f,
-        1.0f,  1.0f,  0.0f,  1.0f,  0.0f
+        -0.05f,  0.05,  0.0f,  0.0f,  0.0f,
+         0.05f, -0.05,  0.0f,  1.0f,  1.0f,
+         0.05f,  0.05,  0.0f,  1.0f,  0.0f
     };
     
     float skyboxVertices[] = {
@@ -486,6 +486,18 @@ int main()
     glBindTexture(GL_TEXTURE_2D, texture[1]);
     glActiveTexture(GL_TEXTURE2);
     glBindTexture(GL_TEXTURE_CUBE_MAP,textureID);
+    
+    glm::vec2 translations[100];
+    int index=0;
+    float offset=0.1f;
+    for (int y= -10; y<10; y+=2) {
+        for (int x=-10; x<10; x+=2) {
+            glm::vec2 translation;
+            translation.x=(float)x/10.0f+offset;
+            translation.y=(float)y/10.0f+offset;
+            translations[index++]=translation;
+        }
+    }
     // render loop
     // -----------
     while (!glfwWindowShouldClose(window))
@@ -506,53 +518,63 @@ int main()
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         
-        glDepthFunc(GL_LEQUAL);
-        skyboxShader.use();
-        view=glm::mat4(glm::mat3(camera.GetViewMatrix()));
-        glBindBuffer(GL_UNIFORM_BUFFER,uboMatrices);
-        glBufferSubData(GL_UNIFORM_BUFFER,0,sizeof(glm::mat4),glm::value_ptr(view));
-        glBindBuffer(GL_UNIFORM_BUFFER,0);
+        planeShader.use();
+        for (unsigned int i=0; i<100; i++) {
+            std::stringstream ss;
+            std::string index;
+            ss<<i;
+            index=ss.str();
+            glUniform2f(glGetUniformLocation(planeShader.ID,("offsets["+index+"]").c_str()),translations[i].x,translations[i].y);
+        }
+        glBindVertexArray(planeVAO);
+        glDrawArraysInstanced(GL_TRIANGLES,0,6,100);
         
-        model=glm::mat4(3.0f);
-        glUniform1i(glGetUniformLocation(skyboxShader.ID,"skybox"),1);
-        glUniformMatrix4fv(glGetUniformLocation(skyboxShader.ID,"model"),1,GL_FALSE,glm::value_ptr(model));
-        glBindVertexArray(skyboxVAO);
+//
+//        glDepthFunc(GL_LEQUAL);
+//        skyboxShader.use();
+//        view=glm::mat4(glm::mat3(camera.GetViewMatrix()));
+//        glBindBuffer(GL_UNIFORM_BUFFER,uboMatrices);
+//        glBufferSubData(GL_UNIFORM_BUFFER,0,sizeof(glm::mat4),glm::value_ptr(view));
+//        glBindBuffer(GL_UNIFORM_BUFFER,0);
+//
+//        model=glm::mat4(3.0f);
+//        glUniform1i(glGetUniformLocation(skyboxShader.ID,"skybox"),1);
+//        glUniformMatrix4fv(glGetUniformLocation(skyboxShader.ID,"model"),1,GL_FALSE,glm::value_ptr(model));
+//        glBindVertexArray(skyboxVAO);
+////        glDrawArrays(GL_TRIANGLES, 0, 36);
+//        glDepthFunc(GL_LESS);
+
+        
+//        view=camera.GetViewMatrix();
+//        glBindBuffer(GL_UNIFORM_BUFFER,uboMatrices);
+//        glBufferSubData(GL_UNIFORM_BUFFER,0,sizeof(glm::mat4),glm::value_ptr(view));
+//        glBindBuffer(GL_UNIFORM_BUFFER,0);
+//
+//        ourShader.use();
+//        model=glm::mat4(1.0f);
+//        model=glm::translate(model, lightPos);
+//        model=glm::scale(model, glm::vec3(0.2f));
+//        view=camera.GetViewMatrix();
+//        glUniformMatrix4fv(glGetUniformLocation(ourShader.ID,"model"),1,GL_FALSE,glm::value_ptr(model));
+//
+//        glUniform1f(glGetUniformLocation(ourShader.ID,"time"),glfwGetTime());
+//        glUniform1i(glGetUniformLocation(ourShader.ID,"grass"),1);
+//        glUniform3f(glGetUniformLocation(ourShader.ID,"lightColor"),lightColor.x,lightColor.y,lightColor.z);
+//        glUniform3f(glGetUniformLocation(ourShader.ID,"viewPos"),camera.Position.x,camera.Position.y,camera.Position.z);
+//
+//        glBindVertexArray(VAO);
+//        glDrawArrays(GL_TRIANGLES,0, vertices.size());
+
+//        pointShader.use();
+//        glUniformMatrix4fv(glGetUniformLocation(pointShader.ID,"model"),1,GL_FALSE,glm::value_ptr(model));
+//
+//        glUniform1i(glGetUniformLocation(pointShader.ID,"front"),0);
+//        glUniform1i(glGetUniformLocation(pointShader.ID,"back"),1);
+//        glBindVertexArray(pointVAO);
 //        glDrawArrays(GL_TRIANGLES, 0, 36);
-        glDepthFunc(GL_LESS);
-
         
-        view=camera.GetViewMatrix();
-        glBindBuffer(GL_UNIFORM_BUFFER,uboMatrices);
-        glBufferSubData(GL_UNIFORM_BUFFER,0,sizeof(glm::mat4),glm::value_ptr(view));
-        glBindBuffer(GL_UNIFORM_BUFFER,0);
-        
-        ourShader.use();
-        model=glm::mat4(1.0f);
-        model=glm::translate(model, lightPos);
-        model=glm::scale(model, glm::vec3(0.2f));
-        view=camera.GetViewMatrix();
-        glUniformMatrix4fv(glGetUniformLocation(ourShader.ID,"model"),1,GL_FALSE,glm::value_ptr(model));
-
-        glUniform1f(glGetUniformLocation(ourShader.ID,"time"),glfwGetTime());
-        glUniform1i(glGetUniformLocation(ourShader.ID,"grass"),1);
-        glUniform3f(glGetUniformLocation(ourShader.ID,"lightColor"),lightColor.x,lightColor.y,lightColor.z);
-        glUniform3f(glGetUniformLocation(ourShader.ID,"viewPos"),camera.Position.x,camera.Position.y,camera.Position.z);
-
-        glBindVertexArray(VAO);
-        glDrawArrays(GL_TRIANGLES,0, vertices.size());
-
-
-        
-        pointShader.use();
-        glUniformMatrix4fv(glGetUniformLocation(pointShader.ID,"model"),1,GL_FALSE,glm::value_ptr(model));
-        
-        glUniform1i(glGetUniformLocation(pointShader.ID,"front"),0);
-        glUniform1i(glGetUniformLocation(pointShader.ID,"back"),1);
-        glBindVertexArray(pointVAO);
-//        glDrawArrays(GL_TRIANGLES, 0, 36);
-        
-        geoShader.use();
-        glBindVertexArray(geoVAO);
+//        geoShader.use();
+//        glBindVertexArray(geoVAO);
 //        glDrawArrays(GL_POINTS, 0, 4);
 
         
