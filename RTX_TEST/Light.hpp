@@ -22,7 +22,7 @@ public:
     glm::vec3 Position;
     glm::vec3 Direction;
     glm::vec3 Color;
-    Light(glm::vec3 position=glm::vec3(3,0,0),glm::vec3 direction=glm::vec3(-1,0,0),glm::vec3 color=glm::vec3(1)){
+    Light(glm::vec3 position=glm::vec3(3,0,0),glm::vec3 direction=glm::vec3(-1,-1,0),glm::vec3 color=glm::vec3(1)){
         Position=position;
         Direction=direction;
         Color=color;

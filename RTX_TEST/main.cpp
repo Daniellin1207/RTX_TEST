@@ -22,7 +22,7 @@
 
 
 Camera camera(glm::vec3(0,0,0),glm::vec3(0,1,0),250,0);
-Light light(glm::vec3(5,0,0));
+Light light(glm::vec3(3,3,0));
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow *window);
 void mouse_callback(GLFWwindow *window,double xpos,double ypos);
@@ -106,6 +106,7 @@ int main()
     Shader skyboxShader("/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/vertSkyboxShader.vert","/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/fragSkyboxShader.frag");
     Shader pointShader("/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/vertPointShader.vert","/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/fragPointShader.frag");
     Shader geoShader("/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/vertGeoShader.vert","/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/geoGeoShader.gs","/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/fragGeoShader.frag");
+    Shader depthShader("/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/vertDepthShader.vert","/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/fragDepthShader.frag");
     // set up vertex data (and buffer(s)) and configure vertex attributes
     // ------------------------------------------------------------------
     float lightVertices[] = {
@@ -523,6 +524,30 @@ int main()
     glFramebufferTexture2D(GL_FRAMEBUFFER,GL_COLOR_ATTACHMENT0,GL_TEXTURE_2D,textureColorBuffer,0);
     glBindFramebuffer(GL_FRAMEBUFFER,0);
     
+    
+    const GLuint SHADOW_WIDTH=1024,SHADOW_HEIGHT=1024;
+    GLuint depthMap;
+    glGenTextures(1, &depthMap);
+    glBindTexture(GL_TEXTURE_2D, depthMap);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, SHADOW_WIDTH, SHADOW_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+    
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT); // note that we set the container wrapping method to GL_CLAMP_TO_EDGE
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    // set texture filtering parameters
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    
+    glActiveTexture(GL_TEXTURE3);
+    glBindTexture(GL_TEXTURE_2D, depthMap);
+    
+    unsigned int depthMapFBO;
+    glGenFramebuffers(1,&depthMapFBO);
+    glBindFramebuffer(GL_FRAMEBUFFER,depthMapFBO);
+    glFramebufferTexture2D(GL_FRAMEBUFFER,GL_DEPTH_ATTACHMENT,GL_TEXTURE_2D,depthMap,0);
+    glDrawBuffer(GL_NONE);
+    glReadBuffer(GL_NONE);
+    glBindFramebuffer(GL_FRAMEBUFFER,0);
+    
 //    unsigned int uniformBlockIndexOur=glGetUniformBlockIndex(ourShader.ID,"Matrices");
 //    unsigned int uniformBlockIndexSkybox=glGetUniformBlockIndex(skyboxShader.ID,"Matrices");
 //    unsigned int uniformBlockIndexPoint=glGetUniformBlockIndex(pointShader.ID,"Matrices");
@@ -550,6 +575,11 @@ int main()
     glm::mat4 model=glm::mat4(1.0f);
     glm::mat4 view=glm::mat4(1.0f);
     glm::mat4 pers=glm::mat4(1.0f);
+    
+    glm::mat4 lightView=glm::lookAt(light.Position, light.Position+light.Direction, glm::normalize(glm::cross(light.Direction,glm::normalize(glm::cross(camera.WorldUp,light.Direction)))));
+    glm::mat4 lightPers=glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, 0.1f, 100.0f);
+    glm::mat4 lightMat=lightPers*lightView;
+    
     // render loop
     // -----------
     while (!glfwWindowShouldClose(window))
@@ -559,24 +589,55 @@ int main()
         lastFrame=currentFrame;
         processInput(window);
         
+        
+//        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+//        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        
+        glViewport(0,0,SHADOW_WIDTH,SHADOW_HEIGHT);
+        glBindFramebuffer(GL_FRAMEBUFFER,depthMapFBO);
+        glClear(GL_DEPTH_BUFFER_BIT);
+        
+        
+
+        lightShader.use();
+
+        model=glm::mat4(1.0f);
+        glUniformMatrix4fv(glGetUniformLocation(lightShader.ID,"lightMat"),1,GL_FALSE,glm::value_ptr(lightMat));
+        glUniformMatrix4fv(glGetUniformLocation(lightShader.ID,"model"),1,GL_FALSE,glm::value_ptr(model));
+        glBindVertexArray(lightVAO);
+        glDrawArrays(GL_TRIANGLES, 0, 36);
+        model=glm::translate(model, glm::vec3(2,0,0));
+        glUniformMatrix4fv(glGetUniformLocation(lightShader.ID,"model"),1,GL_FALSE,glm::value_ptr(model));
+        glDrawArrays(GL_TRIANGLES, 0, 36);
+        
+        glBindFramebuffer(GL_FRAMEBUFFER,0);
+        glViewport(0,0,SCR_WIDTH*2,SCR_HEIGHT*2);
+
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        
-        lightShader.use();
+
+        depthShader.use();
         view=camera.GetViewMatrix();
         pers=glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 1000.0f);
         model=glm::mat4(1.0f);
-        glUniformMatrix4fv(glGetUniformLocation(lightShader.ID,"view"),1,GL_FALSE,glm::value_ptr(view));
-        glUniformMatrix4fv(glGetUniformLocation(lightShader.ID,"pers"),1,GL_FALSE,glm::value_ptr(pers));
-        glUniformMatrix4fv(glGetUniformLocation(lightShader.ID,"model"),1,GL_FALSE,glm::value_ptr(model));
-        
-        glUniform3f(glGetUniformLocation(lightShader.ID,"light.pos"),light.Position.x,light.Position.y,light.Position.z);
-        glUniform3f(glGetUniformLocation(lightShader.ID,"light.color"),light.Color.x,light.Color.y,light.Color.z);
-        glUniform3f(glGetUniformLocation(lightShader.ID,"viewPos"),camera.Position.x,camera.Position.y,camera.Position.z);
-        glUniform1i(glGetUniformLocation(lightShader.ID,"blinn"),blinn);
-//        glUniform3f(glGetUniformLocation(lightShader.ID,"light.dir"),light.Position.x,light.Position.y,light.Position.z);
-        glUniform1i(glGetUniformLocation(lightShader.ID,"wall"),1);
+        glUniformMatrix4fv(glGetUniformLocation(depthShader.ID,"view"),1,GL_FALSE,glm::value_ptr(view));
+        glUniformMatrix4fv(glGetUniformLocation(depthShader.ID,"pers"),1,GL_FALSE,glm::value_ptr(pers));
+        glUniformMatrix4fv(glGetUniformLocation(depthShader.ID,"model"),1,GL_FALSE,glm::value_ptr(model));
+        glUniformMatrix4fv(glGetUniformLocation(depthShader.ID,"lightMat"),1,GL_FALSE,glm::value_ptr(lightMat));
+
+        glUniform3f(glGetUniformLocation(depthShader.ID,"light.pos"),light.Position.x,light.Position.y,light.Position.z);
+        glUniform3f(glGetUniformLocation(depthShader.ID,"light.color"),light.Color.x,light.Color.y,light.Color.z);
+        glUniform3f(glGetUniformLocation(depthShader.ID,"viewPos"),camera.Position.x,camera.Position.y,camera.Position.z);
+        glUniform1i(glGetUniformLocation(depthShader.ID,"blinn"),blinn);
+        //        glUniform3f(glGetUniformLocation(lightShader.ID,"light.dir"),light.Position.x,light.Position.y,light.Position.z);
+        glUniform1i(glGetUniformLocation(depthShader.ID,"wall"),1);
+        glUniform1i(glGetUniformLocation(depthShader.ID,"depthMap"),3);
+
+
         glBindVertexArray(lightVAO);
+        glDrawArrays(GL_TRIANGLES, 0, 36);
+        model=glm::translate(model, glm::vec3(2,0,0));
+        glUniformMatrix4fv(glGetUniformLocation(depthShader.ID,"model"),1,GL_FALSE,glm::value_ptr(model));
         glDrawArrays(GL_TRIANGLES, 0, 36);
         
         glfwSwapBuffers(window);
