@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		650D39DF229D4CA600622B7A /* Camera.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 650D39DD229D4CA600622B7A /* Camera.cpp */; };
+		656BB3B222A25C2600AD14AC /* Light.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 656BB3B022A25C2600AD14AC /* Light.cpp */; };
 		65BB8072229A7DF50093B7EC /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 65BB8071229A7DF50093B7EC /* main.cpp */; };
 		65BB96E4229A855F0093B7EC /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 65BB8079229A7E890093B7EC /* OpenGL.framework */; };
 		65BB96E5229A85860093B7EC /* libGLEW.2.1.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 65BB96B1229A7EC80093B7EC /* libGLEW.2.1.0.dylib */; };
@@ -39,6 +40,8 @@
 		652AC58922A1889800085591 /* fragGeoShader.frag */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.glsl; path = fragGeoShader.frag; sourceTree = "<group>"; };
 		652AC58B22A20FFC00085591 /* geoGeoShader.gs */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.glsl; path = geoGeoShader.gs; sourceTree = "<group>"; };
 		652AC58C22A21B4200085591 /* geoShader.frag */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.glsl; path = geoShader.frag; sourceTree = "<group>"; };
+		656BB3B022A25C2600AD14AC /* Light.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Light.cpp; sourceTree = "<group>"; };
+		656BB3B122A25C2600AD14AC /* Light.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = Light.hpp; sourceTree = "<group>"; };
 		65A9DDC7229FDA6800FB7FB8 /* blending_transparent_window.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = blending_transparent_window.png; sourceTree = "<group>"; };
 		65BB806E229A7DF50093B7EC /* RTX_TEST */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = RTX_TEST; sourceTree = BUILT_PRODUCTS_DIR; };
 		65BB8071229A7DF50093B7EC /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
@@ -5739,6 +5742,8 @@
 				652AC58822A1888B00085591 /* vertGeoShader.vert */,
 				652AC58B22A20FFC00085591 /* geoGeoShader.gs */,
 				652AC58922A1889800085591 /* fragGeoShader.frag */,
+				656BB3B022A25C2600AD14AC /* Light.cpp */,
+				656BB3B122A25C2600AD14AC /* Light.hpp */,
 			);
 			path = RTX_TEST;
 			sourceTree = "<group>";
@@ -12497,6 +12502,7 @@
 			files = (
 				65BB96E9229AD39F0093B7EC /* Shader.cpp in Sources */,
 				650D39DF229D4CA600622B7A /* Camera.cpp in Sources */,
+				656BB3B222A25C2600AD14AC /* Light.cpp in Sources */,
 				65BB8072229A7DF50093B7EC /* main.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

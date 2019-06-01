@@ -7,6 +7,7 @@
 #include <cmath>
 #include "Shader.hpp"
 #include "Camera.hpp"
+#include "Light.hpp"
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
@@ -21,6 +22,7 @@
 
 
 Camera camera(glm::vec3(0,0,0),glm::vec3(0,1,0),250,0);
+Light light(glm::vec3(5,0,0));
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow *window);
 void mouse_callback(GLFWwindow *window,double xpos,double ypos);
@@ -40,6 +42,7 @@ bool firstMouse=true;
 
 float deltaTime=0.0f;
 float lastFrame=0.0f;
+int blinn=0;
 
 std::vector<std::string > faces{
     "/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/Textures/skybox/left.jpg",
@@ -83,7 +86,6 @@ int main()
     glfwMakeContextCurrent(window);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
     glfwSetCursorPosCallback(window, mouse_callback);
-//    glfwSetScrollCallback(window, scroll_callback);
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     if(glewInit()!=GLEW_OK){
         std::cout<<"Init Failed!"<<std::endl;
@@ -93,12 +95,10 @@ int main()
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_STENCIL_TEST);
     glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
-//    glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-//    glEnable(GL_CULL_FACE);
-//    glCullFace(GL_BACK);
     glEnable(GL_PROGRAM_POINT_SIZE);
     glEnable(GL_MULTISAMPLE);
+    
     Shader ourShader("/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/vertShader.vert","/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/geoShader.frag","/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/fragShader.frag");
     Shader lightShader("/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/vertLightShader.vert","/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/fragLightShader.frag");
     Shader singleShader("/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/vertSingleColorShader.vert","/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/fragSingleColorShader.frag");
@@ -216,9 +216,9 @@ int main()
         -0.5,-0.5,1,1,0
     };
     
+    
     std::vector<Vertex> vertices;
     std::vector<unsigned int>indices;
-    
     const std::string path = "/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/Models/nanosuit/nanosuit.obj";
     tinyobj::attrib_t attrib;
     std::vector<tinyobj::shape_t> shapes;
@@ -226,10 +226,6 @@ int main()
     std::string warn;
     std::string err;
     
-    //    bool LoadObj(attrib_t *attrib, std::vector<shape_t> *shapes,
-    //                 std::vector<material_t> *materials, std::string *warn,
-    //                 std::string *err, const char *filename, const char *mtl_basedir,
-    //                 bool trianglulate, bool default_vcols_fallback)
     if(!tinyobj::LoadObj(&attrib,&shapes,&materials,&warn,&err,path.c_str()))
     {
         throw std::runtime_error(warn+err);
@@ -303,9 +299,6 @@ int main()
 //        3,0,2
 //    };
     
-    glm::vec3 lightPos(0,0,5);
-    glm::vec3 lightColor(1.0,1.0,1.0);
-    glm::vec3 objectColor(1.0,0.0f,1.0f);
     unsigned int lightVAO,lightVBO;
     glGenVertexArrays(1,&lightVAO);
     glBindVertexArray(lightVAO);
@@ -463,11 +456,11 @@ int main()
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     
 //    stbi_set_flip_vertically_on_load(true);
-    unsigned char *data1 = stbi_load("/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/Textures/container2_specular.png", &width, &height, &nrChannels, 0);
+    unsigned char *data1 = stbi_load("/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/Textures/wall.jpg", &width, &height, &nrChannels, 0);
     if (data1)
     {
         glBindTexture(GL_TEXTURE_2D, texture[1]);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data1);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data1);
         glGenerateMipmap(GL_TEXTURE_2D);
     }
     else
@@ -509,18 +502,11 @@ int main()
     }
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     
-    
-    glm::mat4 model=glm::mat4(1.0f);
-    glm::mat4 view=glm::mat4(1.0f);
-    glm::mat4 pers=glm::mat4(1.0f);
-    
-    glm::vec3 cameraDir=glm::vec3(0,0,-1);
-    glm::vec3 cameraUp=glm::vec3(0,1,0);
+
     
     unsigned int framebuffer;
     glGenFramebuffers(1,&framebuffer);
@@ -561,7 +547,9 @@ int main()
     glBindTexture(GL_TEXTURE_CUBE_MAP,textureID);
     
 
-    
+    glm::mat4 model=glm::mat4(1.0f);
+    glm::mat4 view=glm::mat4(1.0f);
+    glm::mat4 pers=glm::mat4(1.0f);
     // render loop
     // -----------
     while (!glfwWindowShouldClose(window))
@@ -569,29 +557,10 @@ int main()
         float currentFrame=glfwGetTime();
         deltaTime=currentFrame-lastFrame;
         lastFrame=currentFrame;
-        // input
-        // -----
         processInput(window);
-        
-        
-//        glBindFramebuffer(GL_FRAMEBUFFER,framebuffer);
-//        glEnable(GL_DEPTH_TEST);
-        // render
-        // ------
         
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        
-//        planeShader.use();
-//        for (unsigned int i=0; i<100; i++) {
-//            std::stringstream ss;
-//            std::string index;
-//            ss<<i;
-//            index=ss.str();
-//            glUniform2f(glGetUniformLocation(planeShader.ID,("offsets["+index+"]").c_str()),translations[i].x,translations[i].y);
-//        }
-//        glBindVertexArray(planeVAO);
-//        glDrawArraysInstanced(GL_TRIANGLES,0,6,100);
         
         lightShader.use();
         view=camera.GetViewMatrix();
@@ -600,87 +569,15 @@ int main()
         glUniformMatrix4fv(glGetUniformLocation(lightShader.ID,"view"),1,GL_FALSE,glm::value_ptr(view));
         glUniformMatrix4fv(glGetUniformLocation(lightShader.ID,"pers"),1,GL_FALSE,glm::value_ptr(pers));
         glUniformMatrix4fv(glGetUniformLocation(lightShader.ID,"model"),1,GL_FALSE,glm::value_ptr(model));
-        glUniform1i(glGetUniformLocation(lightShader.ID,"grass"),0);
+        
+        glUniform3f(glGetUniformLocation(lightShader.ID,"light.pos"),light.Position.x,light.Position.y,light.Position.z);
+        glUniform3f(glGetUniformLocation(lightShader.ID,"light.color"),light.Color.x,light.Color.y,light.Color.z);
+        glUniform3f(glGetUniformLocation(lightShader.ID,"viewPos"),camera.Position.x,camera.Position.y,camera.Position.z);
+        glUniform1i(glGetUniformLocation(lightShader.ID,"blinn"),blinn);
+//        glUniform3f(glGetUniformLocation(lightShader.ID,"light.dir"),light.Position.x,light.Position.y,light.Position.z);
+        glUniform1i(glGetUniformLocation(lightShader.ID,"wall"),1);
         glBindVertexArray(lightVAO);
         glDrawArrays(GL_TRIANGLES, 0, 36);
-        
-//        glDepthFunc(GL_LEQUAL);
-//        skyboxShader.use();
-//        view=glm::mat4(glm::mat3(camera.GetViewMatrix()));
-//        glBindBuffer(GL_UNIFORM_BUFFER,uboMatrices);
-//        glBufferSubData(GL_UNIFORM_BUFFER,0,sizeof(glm::mat4),glm::value_ptr(view));
-//        glBindBuffer(GL_UNIFORM_BUFFER,0);
-//
-//        model=glm::mat4(3.0f);
-//        glUniform1i(glGetUniformLocation(skyboxShader.ID,"skybox"),1);
-//        glUniformMatrix4fv(glGetUniformLocation(skyboxShader.ID,"model"),1,GL_FALSE,glm::value_ptr(model));
-//        glBindVertexArray(skyboxVAO);
-////        glDrawArrays(GL_TRIANGLES, 0, 36);
-//        glDepthFunc(GL_LESS);
-
-        
-//        view=camera.GetViewMatrix();
-//        glBindBuffer(GL_UNIFORM_BUFFER,uboMatrices);
-//        glBufferSubData(GL_UNIFORM_BUFFER,0,sizeof(glm::mat4),glm::value_ptr(view));
-//        glBindBuffer(GL_UNIFORM_BUFFER,0);
-//
-//        ourShader.use();
-//        model=glm::mat4(1.0f);
-//        model=glm::translate(model, lightPos);
-//        model=glm::scale(model, glm::vec3(0.2f));
-//        view=camera.GetViewMatrix();
-//        glUniformMatrix4fv(glGetUniformLocation(ourShader.ID,"model"),1,GL_FALSE,glm::value_ptr(model));
-//
-//        glUniform1f(glGetUniformLocation(ourShader.ID,"time"),glfwGetTime());
-//        glUniform1i(glGetUniformLocation(ourShader.ID,"grass"),1);
-//        glUniform3f(glGetUniformLocation(ourShader.ID,"lightColor"),lightColor.x,lightColor.y,lightColor.z);
-//        glUniform3f(glGetUniformLocation(ourShader.ID,"viewPos"),camera.Position.x,camera.Position.y,camera.Position.z);
-//
-//        glBindVertexArray(VAO);
-//        glDrawArrays(GL_TRIANGLES,0, vertices.size());
-
-//        pointShader.use();
-//        glUniformMatrix4fv(glGetUniformLocation(pointShader.ID,"model"),1,GL_FALSE,glm::value_ptr(model));
-//
-//        glUniform1i(glGetUniformLocation(pointShader.ID,"front"),0);
-//        glUniform1i(glGetUniformLocation(pointShader.ID,"back"),1);
-//        glBindVertexArray(pointVAO);
-//        glDrawArrays(GL_TRIANGLES, 0, 36);
-        
-//        geoShader.use();
-//        glBindVertexArray(geoVAO);
-//        glDrawArrays(GL_POINTS, 0, 4);
-
-        
-//        glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
-//        glStencilMask(0x00);
-//        glDisable(GL_DEPTH_TEST);
-//        singleShader.use();
-//        model=glm::scale(model, glm::vec3(1.2f));
-//        glUniformMatrix4fv(glGetUniformLocation(singleShader.ID,"model"),1,GL_FALSE,glm::value_ptr(model));
-//        glUniformMatrix4fv(glGetUniformLocation(singleShader.ID,"view"),1,GL_FALSE,glm::value_ptr(view));
-//        glUniformMatrix4fv(glGetUniformLocation(singleShader.ID,"pers"),1,GL_FALSE,glm::value_ptr(pers));
-//
-//        glUniform3f(glGetUniformLocation(singleShader.ID,"lightColor"),lightColor.x,lightColor.y,lightColor.z);
-//        glBindVertexArray(lightVAO);
-//        glDrawArrays(GL_TRIANGLES, 0, 36);
-//
-//        glStencilMask(0xFF);
-//        glEnable(GL_DEPTH_TEST);
-        
-//        glBindFramebuffer(GL_FRAMEBUFFER,0);
-//        glDisable(GL_DEPTH_TEST);
-//
-//        glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-//        glClear(GL_COLOR_BUFFER_BIT);
-//
-//        glActiveTexture(GL_TEXTURE0);
-//        glBindTexture(GL_TEXTURE_2D, textureColorBuffer);
-//        planeShader.use();
-//        glUniform1i(glGetUniformLocation(planeShader.ID,"grass"),0);
-//
-//        glBindVertexArray(planeVAO);
-//        glDrawArrays(GL_TRIANGLES,0, 6);
         
         glfwSwapBuffers(window);
         glfwPollEvents();
@@ -711,6 +608,8 @@ void processInput(GLFWwindow *window)
         camera.ProcessKeyboard(FORWARD, deltaTime);
     if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
         camera.ProcessKeyboard(BACKWARD, deltaTime);
+    if (glfwGetKey(window, GLFW_KEY_B) == GLFW_PRESS)
+        blinn=1-blinn;
 }
 
 void mouse_callback(GLFWwindow *window,double xpos,double ypos)
