@@ -207,10 +207,10 @@ int main()
     };
     
     float points[]={
-        -0.5f,0.5f,
-        0.5f,0.5f,
-        0.5,-0.5,
-        -0.5,-0.5
+        -0.5f,0.5f,1,0,0,
+        0.5f,0.5f,0,1,0,
+        0.5,-0.5,0,0,1,
+        -0.5,-0.5,1,1,0
     };
     
     std::vector<Vertex> vertices;
@@ -352,8 +352,10 @@ int main()
     glBindBuffer(GL_ARRAY_BUFFER,geoVBO);
     glBufferData(GL_ARRAY_BUFFER,sizeof(points),points,GL_STATIC_DRAW);
     
-    glVertexAttribPointer(0,2,GL_FLOAT,GL_FALSE,2*sizeof(float),(void*)0);
+    glVertexAttribPointer(0,2,GL_FLOAT,GL_FALSE,5*sizeof(float),(void*)0);
     glEnableVertexAttribArray(0);
+    glVertexAttribPointer(1,3,GL_FLOAT,GL_FALSE,5*sizeof(float),(void*)(2*sizeof(float)));
+    glEnableVertexAttribArray(1);
     
     
     glBindBuffer(GL_ARRAY_BUFFER, 0);
