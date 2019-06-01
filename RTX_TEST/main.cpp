@@ -20,7 +20,7 @@
 #include "tiny_obj_loader.h"
 
 
-Camera camera(glm::vec3(-45,0,0),glm::vec3(0,1,0),250,0);
+Camera camera(glm::vec3(0,0,0),glm::vec3(0,1,0),250,0);
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow *window);
 void mouse_callback(GLFWwindow *window,double xpos,double ypos);
@@ -270,30 +270,30 @@ int main()
         glm::vec3(-1.3f,  1.0f, -1.5f)
     };
     
-    unsigned int amount=1000;
-    glm::mat4 modelMatrices[amount];
-    srand(glfwGetTime());
-    float radius=50.0;
-    float offset=2.5f;
-    for (unsigned int i=0; i<amount; i++) {
-        glm::mat4 model=glm::mat4(1.0f);
-        float angle=(float)i/(float)amount*360.0f;
-        float displacement=(rand()%(int)(2*offset*100))/100.0f-offset;
-        float x=sin(angle)*radius+displacement;
-        displacement=(rand()%(int)(2*offset*100))/100.0f-offset;
-        float y=displacement*0.4f;
-        displacement=(rand()%(int)(2*offset*100))/100.0f-offset;
-        float z=cos(angle)*radius+displacement;
-        model=glm::translate(model, glm::vec3(x,y,z));
-
-        float scale=(rand()%20)/100.0f+0.05;
-        model=glm::scale(model,glm::vec3(scale));
-
-        float rotAngle=(rand()%360);
-        model=glm::rotate(model,rotAngle,glm::vec3(0.4,0.6,0.8));
-
-        modelMatrices[i]=model;
-    }
+//    unsigned int amount=1000;
+//    glm::mat4 modelMatrices[amount];
+//    srand(glfwGetTime());
+//    float radius=50.0;
+//    float offset=2.5f;
+//    for (unsigned int i=0; i<amount; i++) {
+//        glm::mat4 model=glm::mat4(1.0f);
+//        float angle=(float)i/(float)amount*360.0f;
+//        float displacement=(rand()%(int)(2*offset*100))/100.0f-offset;
+//        float x=sin(angle)*radius+displacement;
+//        displacement=(rand()%(int)(2*offset*100))/100.0f-offset;
+//        float y=displacement*0.4f;
+//        displacement=(rand()%(int)(2*offset*100))/100.0f-offset;
+//        float z=cos(angle)*radius+displacement;
+//        model=glm::translate(model, glm::vec3(x,y,z));
+//
+//        float scale=(rand()%20)/100.0f+0.05;
+//        model=glm::scale(model,glm::vec3(scale));
+//
+//        float rotAngle=(rand()%360);
+//        model=glm::rotate(model,rotAngle,glm::vec3(0.4,0.6,0.8));
+//
+//        modelMatrices[i]=model;
+//    }
     
 //    int indices[]={
 //        0,1,2,
@@ -317,25 +317,25 @@ int main()
     glEnableVertexAttribArray(2);
     
     
-    unsigned int buffer;
-    glGenBuffers(1,&buffer);
-    glBindBuffer(GL_ARRAY_BUFFER,buffer);
-    glBufferData(GL_ARRAY_BUFFER,amount*sizeof(glm::mat4),&modelMatrices[0],GL_STATIC_DRAW);
-    
-    glEnableVertexAttribArray(3);
-    glVertexAttribPointer(3,4,GL_FLOAT,GL_FALSE,sizeof(glm::mat4),(void*)0);
-    glEnableVertexAttribArray(4);
-    glVertexAttribPointer(4,4,GL_FLOAT,GL_FALSE,sizeof(glm::mat4),(void*)(sizeof(glm::vec4)));
-    glEnableVertexAttribArray(5);
-    glVertexAttribPointer(5,4,GL_FLOAT,GL_FALSE,sizeof(glm::mat4),(void*)(2*sizeof(glm::vec4)));
-    glEnableVertexAttribArray(6);
-    glVertexAttribPointer(6,4,GL_FLOAT,GL_FALSE,sizeof(glm::mat4),(void*)(3*sizeof(glm::vec4)));
-    
-    glVertexAttribDivisor(3,1);
-    glVertexAttribDivisor(4,1);
-    glVertexAttribDivisor(5,1);
-    glVertexAttribDivisor(6,1);
-    
+//    unsigned int buffer;
+//    glGenBuffers(1,&buffer);
+//    glBindBuffer(GL_ARRAY_BUFFER,buffer);
+//    glBufferData(GL_ARRAY_BUFFER,amount*sizeof(glm::mat4),&modelMatrices[0],GL_STATIC_DRAW);
+//
+//    glEnableVertexAttribArray(3);
+//    glVertexAttribPointer(3,4,GL_FLOAT,GL_FALSE,sizeof(glm::mat4),(void*)0);
+//    glEnableVertexAttribArray(4);
+//    glVertexAttribPointer(4,4,GL_FLOAT,GL_FALSE,sizeof(glm::mat4),(void*)(sizeof(glm::vec4)));
+//    glEnableVertexAttribArray(5);
+//    glVertexAttribPointer(5,4,GL_FLOAT,GL_FALSE,sizeof(glm::mat4),(void*)(2*sizeof(glm::vec4)));
+//    glEnableVertexAttribArray(6);
+//    glVertexAttribPointer(6,4,GL_FLOAT,GL_FALSE,sizeof(glm::mat4),(void*)(3*sizeof(glm::vec4)));
+//
+//    glVertexAttribDivisor(3,1);
+//    glVertexAttribDivisor(4,1);
+//    glVertexAttribDivisor(5,1);
+//    glVertexAttribDivisor(6,1);
+//
     
     
     unsigned int VBO, VAO;
@@ -593,17 +593,14 @@ int main()
         lightShader.use();
         view=camera.GetViewMatrix();
         pers=glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 1000.0f);
+        model=glm::mat4(1.0f);
         glUniformMatrix4fv(glGetUniformLocation(lightShader.ID,"view"),1,GL_FALSE,glm::value_ptr(view));
         glUniformMatrix4fv(glGetUniformLocation(lightShader.ID,"pers"),1,GL_FALSE,glm::value_ptr(pers));
+        glUniformMatrix4fv(glGetUniformLocation(lightShader.ID,"model"),1,GL_FALSE,glm::value_ptr(model));
         glUniform1i(glGetUniformLocation(lightShader.ID,"grass"),0);
-        for (int i = 0; i<amount; i++) {
-            
-            glUniformMatrix4fv(glGetUniformLocation(lightShader.ID,"model"),1,GL_FALSE,glm::value_ptr(modelMatrices[i]));
-            
-            glBindVertexArray(lightVAO);
-            glDrawArraysInstanced(GL_TRIANGLES, 0, 36,amount);
-        }
-
+        glBindVertexArray(lightVAO);
+        glDrawArrays(GL_TRIANGLES, 0, 36);
+        
 //        glDepthFunc(GL_LEQUAL);
 //        skyboxShader.use();
 //        view=glm::mat4(glm::mat3(camera.GetViewMatrix()));
