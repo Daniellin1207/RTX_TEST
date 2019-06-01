@@ -31,7 +31,17 @@ void main()
     projCoords=projCoords*0.5+0.5;
     float closestDepth=texture(depthMap,projCoords.xy).r;
     float currentDepth=projCoords.z;
-    float shadow=currentDepth-0.0001>closestDepth?1.0:0.0;
+    float shadow=0.0f;
+    
+    vec2 texelSize=1.0/textureSize(depthMap,0);
+    for (int x=-1; x<=1; ++x)
+    {
+        for (int y=-1; y<=1; ++y) {
+            float pcfDepth=texture(depthMap,projCoords.xy+vec2(x,y)*texelSize).r;
+            shadow+=currentDepth-0.00048>pcfDepth?1.0:0.0;
+        }
+    }
+    shadow/=9.0f;
 
 
 //    vec3 lightDir=normalize(light.pos-FragPos);
