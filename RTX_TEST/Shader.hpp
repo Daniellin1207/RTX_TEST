@@ -15,13 +15,17 @@
 class Shader{
 public:
     Shader(const char* vertPath, const char* fragPath);
+    Shader(const char* vertPath,const char* geoPath, const char* fragPath);
     void use();
     unsigned int ID;
 private:
     std::string vertexCode;
+    std::string geometryCode;
     std::string fragmentCode;
     std::string path;
     void createShader(const char* vertCode,const char* fragCode);
+    
+    void createShader(const char* vertCode,const char* geoCode,const char* fragCode);
 };
 
 #endif

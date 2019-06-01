@@ -36,6 +36,9 @@
 		6501CF29229FD29D0066F8CF /* grass.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = grass.png; sourceTree = "<group>"; };
 		650D39DD229D4CA600622B7A /* Camera.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Camera.cpp; sourceTree = "<group>"; };
 		650D39DE229D4CA600622B7A /* Camera.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = Camera.hpp; sourceTree = "<group>"; };
+		652AC58822A1888B00085591 /* vertGeoShader.vert */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.glsl; path = vertGeoShader.vert; sourceTree = "<group>"; };
+		652AC58922A1889800085591 /* fragGeoShader.frag */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.glsl; path = fragGeoShader.frag; sourceTree = "<group>"; };
+		652AC58B22A20FFC00085591 /* geoGeoShader.gs */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.glsl; path = geoGeoShader.gs; sourceTree = "<group>"; };
 		65A9DDC7229FDA6800FB7FB8 /* blending_transparent_window.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = blending_transparent_window.png; sourceTree = "<group>"; };
 		65BB806E229A7DF50093B7EC /* RTX_TEST */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = RTX_TEST; sourceTree = BUILT_PRODUCTS_DIR; };
 		65BB8071229A7DF50093B7EC /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
@@ -5732,6 +5735,9 @@
 				65E3669B22A0C1D10010A2E1 /* fragSkyboxShader.frag */,
 				65E366A422A10B9E0010A2E1 /* vertPointShader.vert */,
 				65E366A522A10BAE0010A2E1 /* fragPointShader.frag */,
+				652AC58822A1888B00085591 /* vertGeoShader.vert */,
+				652AC58922A1889800085591 /* fragGeoShader.frag */,
+				652AC58B22A20FFC00085591 /* geoGeoShader.gs */,
 			);
 			path = RTX_TEST;
 			sourceTree = "<group>";

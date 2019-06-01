@@ -102,6 +102,7 @@ int main()
     Shader planeShader("/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/vertPlaneShader.vert","/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/fragPlaneShader.frag");
     Shader skyboxShader("/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/vertSkyboxShader.vert","/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/fragSkyboxShader.frag");
     Shader pointShader("/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/vertPointShader.vert","/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/fragPointShader.frag");
+    Shader geoShader("/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/vertGeoShader.vert","/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/geoGeoShader.gs","/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/fragGeoShader.frag");
     // set up vertex data (and buffer(s)) and configure vertex attributes
     // ------------------------------------------------------------------
     float lightVertices[] = {
@@ -203,6 +204,13 @@ int main()
         1.0f, -1.0f, -1.0f,
         -1.0f, -1.0f,  1.0f,
         1.0f, -1.0f,  1.0f
+    };
+    
+    float points[]={
+        -0.5f,0.5f,
+        0.5f,0.5f,
+        0.5,-0.5,
+        -0.5,-0.5
     };
     
     std::vector<Vertex> vertices;
@@ -337,8 +345,21 @@ int main()
     glVertexAttribPointer(1,2,GL_FLOAT,GL_FALSE,8*sizeof(float),(void*)(6*sizeof(float)));
     glEnableVertexAttribArray(1);
 
+    unsigned int geoVBO,geoVAO;
+    glGenVertexArrays(1,&geoVAO);
+    glGenBuffers(1,&geoVBO);
+    glBindVertexArray(geoVAO);
+    glBindBuffer(GL_ARRAY_BUFFER,geoVBO);
+    glBufferData(GL_ARRAY_BUFFER,sizeof(points),points,GL_STATIC_DRAW);
+    
+    glVertexAttribPointer(0,2,GL_FLOAT,GL_FALSE,2*sizeof(float),(void*)0);
+    glEnableVertexAttribArray(0);
+    
+    
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
+    
+    
     
     unsigned int texture[3];
     glGenTextures(3, texture);
@@ -490,10 +511,11 @@ int main()
         glBufferSubData(GL_UNIFORM_BUFFER,0,sizeof(glm::mat4),glm::value_ptr(view));
         glBindBuffer(GL_UNIFORM_BUFFER,0);
         
+        model=glm::mat4(3.0f);
         glUniform1i(glGetUniformLocation(skyboxShader.ID,"skybox"),1);
         glUniformMatrix4fv(glGetUniformLocation(skyboxShader.ID,"model"),1,GL_FALSE,glm::value_ptr(model));
         glBindVertexArray(skyboxVAO);
-        glDrawArrays(GL_TRIANGLES, 0, 36);
+//        glDrawArrays(GL_TRIANGLES, 0, 36);
         glDepthFunc(GL_LESS);
 
         
@@ -516,7 +538,7 @@ int main()
         glUniform3f(glGetUniformLocation(ourShader.ID,"viewPos"),camera.Position.x,camera.Position.y,camera.Position.z);
 
         glBindVertexArray(VAO);
-        glDrawArrays(GL_TRIANGLES,0, vertices.size());
+//        glDrawArrays(GL_TRIANGLES,0, vertices.size());
 
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, texture[0]);
@@ -529,8 +551,11 @@ int main()
         glUniform1i(glGetUniformLocation(pointShader.ID,"front"),0);
         glUniform1i(glGetUniformLocation(pointShader.ID,"back"),1);
         glBindVertexArray(pointVAO);
-        glDrawArrays(GL_TRIANGLES, 0, 36);
+//        glDrawArrays(GL_TRIANGLES, 0, 36);
         
+        geoShader.use();
+        glBindVertexArray(geoVAO);
+        glDrawArrays(GL_POINTS, 0, 4);
 
         
 //        glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
