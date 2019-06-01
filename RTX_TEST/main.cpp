@@ -96,7 +96,7 @@ int main()
 //    glEnable(GL_CULL_FACE);
 //    glCullFace(GL_BACK);
     glEnable(GL_PROGRAM_POINT_SIZE);
-    Shader ourShader("/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/vertShader.vert","/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/fragShader.frag");
+    Shader ourShader("/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/vertShader.vert","/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/geoShader.frag","/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/fragShader.frag");
     Shader lightShader("/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/vertLightShader.vert","/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/fragLightShader.frag");
     Shader singleShader("/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/vertSingleColorShader.vert","/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/fragSingleColorShader.frag");
     Shader planeShader("/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/vertPlaneShader.vert","/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/fragPlaneShader.frag");
@@ -464,11 +464,6 @@ int main()
     glFramebufferTexture2D(GL_FRAMEBUFFER,GL_COLOR_ATTACHMENT0,GL_TEXTURE_2D,textureColorBuffer,0);
     glBindFramebuffer(GL_FRAMEBUFFER,0);
     
-    //高级OpenGL/高级GLSL/Uniform块布局
-//    1. 所有shader中将相同的uniform部分写到一个块中，需要计算占地大小。使用时，直接使用变量名称。
-//    2. 提取所有shader中相同的块的名称，使用glGetUniformBlockIndex();
-//    3. 再通过glUniformBlockBinding()将
-    
     unsigned int uniformBlockIndexOur=glGetUniformBlockIndex(ourShader.ID,"Matrices");
     unsigned int uniformBlockIndexSkybox=glGetUniformBlockIndex(skyboxShader.ID,"Matrices");
     unsigned int uniformBlockIndexPoint=glGetUniformBlockIndex(pointShader.ID,"Matrices");
@@ -484,6 +479,13 @@ int main()
     pers=glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 1000.0f);
     glBufferSubData(GL_UNIFORM_BUFFER,sizeof(glm::mat4),sizeof(glm::mat4),glm::value_ptr(pers));
     glBindBuffer(GL_UNIFORM_BUFFER,0);
+    
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, texture[0]);
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, texture[1]);
+    glActiveTexture(GL_TEXTURE2);
+    glBindTexture(GL_TEXTURE_CUBE_MAP,textureID);
     // render loop
     // -----------
     while (!glfwWindowShouldClose(window))
@@ -500,14 +502,12 @@ int main()
 //        glEnable(GL_DEPTH_TEST);
         // render
         // ------
+        
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         
         glDepthFunc(GL_LEQUAL);
         skyboxShader.use();
-        glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_CUBE_MAP,textureID);
-        
         view=glm::mat4(glm::mat3(camera.GetViewMatrix()));
         glBindBuffer(GL_UNIFORM_BUFFER,uboMatrices);
         glBufferSubData(GL_UNIFORM_BUFFER,0,sizeof(glm::mat4),glm::value_ptr(view));
@@ -527,25 +527,21 @@ int main()
         glBindBuffer(GL_UNIFORM_BUFFER,0);
         
         ourShader.use();
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, texture[0]);
         model=glm::mat4(1.0f);
         model=glm::translate(model, lightPos);
         model=glm::scale(model, glm::vec3(0.2f));
         view=camera.GetViewMatrix();
         glUniformMatrix4fv(glGetUniformLocation(ourShader.ID,"model"),1,GL_FALSE,glm::value_ptr(model));
 
-        glUniform1i(glGetUniformLocation(ourShader.ID,"skybox"),0);
+        glUniform1f(glGetUniformLocation(ourShader.ID,"time"),glfwGetTime());
+        glUniform1i(glGetUniformLocation(ourShader.ID,"grass"),1);
         glUniform3f(glGetUniformLocation(ourShader.ID,"lightColor"),lightColor.x,lightColor.y,lightColor.z);
         glUniform3f(glGetUniformLocation(ourShader.ID,"viewPos"),camera.Position.x,camera.Position.y,camera.Position.z);
 
         glBindVertexArray(VAO);
-//        glDrawArrays(GL_TRIANGLES,0, vertices.size());
+        glDrawArrays(GL_TRIANGLES,0, vertices.size());
 
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, texture[0]);
-        glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_2D, texture[1]);
+
         
         pointShader.use();
         glUniformMatrix4fv(glGetUniformLocation(pointShader.ID,"model"),1,GL_FALSE,glm::value_ptr(model));
@@ -557,7 +553,7 @@ int main()
         
         geoShader.use();
         glBindVertexArray(geoVAO);
-        glDrawArrays(GL_POINTS, 0, 4);
+//        glDrawArrays(GL_POINTS, 0, 4);
 
         
 //        glStencilFunc(GL_NOTEQUAL, 1, 0xFF);

@@ -1,9 +1,7 @@
 #version 330 core
 out vec4 FragColor;
-in vec3 normal;
-in vec3 pos;
 //in vec3 color;
-in vec2 tex;
+in vec2 TexCoords;
 
 uniform vec3 lightPos;
 uniform vec3 lightColor;
@@ -35,6 +33,7 @@ struct Light{
 };
 
 uniform samplerCube skybox;
+uniform sampler2D grass;
 uniform Material material;
 uniform Light light[1];
 //uniform sampler2D ourTexture1;
@@ -87,14 +86,18 @@ void main()
 //        color+=vec4(result*attenuation*ratio,1.0f);
 //
 //    }
-    float ratio=1.00/1.52;
-    vec3 I=normalize(viewPos-pos);
-    vec3 R=refract(I,normalize(normal),ratio);
-    vec3 color=texture(skybox,R).rgb;
+    
+    
+//    float ratio=1.00/1.52;
+//    vec3 I=normalize(viewPos-pos);
+//    vec3 R=refract(I,normalize(normal),ratio);
+//    vec3 color=texture(skybox,R).rgb;
+    
+    
     
 //    float depth=LinearizeDepth(gl_FragCoord.z)/far;
 
-    FragColor=vec4(color,1.0f);
+    FragColor=vec4(texture(grass,TexCoords).rgb,1.0f);
     
 
     
