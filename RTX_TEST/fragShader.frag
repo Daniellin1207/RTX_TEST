@@ -1,7 +1,7 @@
 #version 330 core
 out vec4 FragColor;
 //in vec3 color;
-in vec2 TexCoords;
+//in vec3 normal;
 
 uniform vec3 lightPos;
 uniform vec3 lightColor;
@@ -97,7 +97,7 @@ void main()
     
 //    float depth=LinearizeDepth(gl_FragCoord.z)/far;
 
-    FragColor=vec4(texture(grass,TexCoords).rgb,1.0f);
+    FragColor=vec4(1,1,0,1.0f);
     
 
     

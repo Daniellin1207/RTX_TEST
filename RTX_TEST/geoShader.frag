@@ -2,14 +2,14 @@
 
 #version 330 core
 layout (triangles) in;
-layout (triangle_strip,max_vertices=3) out;
+layout (line_strip,max_vertices=6) out;
 
 //in vec3 normal;
 //in vec3 pos;
 in VS_OUT{
-    vec2 texCoords;
+    vec3 normal;
 }gs_in[];
-out vec2 TexCoords;
+//out vec3 normal;
 
 uniform float time;
 
@@ -46,14 +46,15 @@ vec4 explode(vec4 position,vec3 normal)
 //}
 void move(int index,vec3 norm)
 {
-    gl_Position=explode(gl_in[index].gl_Position,norm);
-    TexCoords=gs_in[index].texCoords;
+    gl_Position=gl_in[index].gl_Position;
     EmitVertex();
+    gl_Position=gl_in[index].gl_Position+vec4(gs_in[index].normal,0.0f)*0.1;
+    EmitVertex();
+    EndPrimitive();
 }
 void main(){
     vec3 normal=GetNormal();
     move(0,normal);
     move(1,normal);
     move(2,normal);
-    EndPrimitive();
 }
