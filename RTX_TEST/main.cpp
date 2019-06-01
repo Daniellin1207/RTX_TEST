@@ -22,7 +22,7 @@
 
 
 Camera camera(glm::vec3(0,0,0),glm::vec3(0,1,0),250,0);
-Light light(glm::vec3(3,3,0));
+Light light(glm::vec3(3,3,0),glm::vec3(-4,-2,-1));
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow *window);
 void mouse_callback(GLFWwindow *window,double xpos,double ypos);
