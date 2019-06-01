@@ -270,7 +270,7 @@ int main()
         glm::vec3(-1.3f,  1.0f, -1.5f)
     };
     
-    unsigned int amount=10000;
+    unsigned int amount=1000;
     glm::mat4 modelMatrices[amount];
     srand(glfwGetTime());
     float radius=50.0;
@@ -315,6 +315,27 @@ int main()
     glEnableVertexAttribArray(1);
     glVertexAttribPointer(2,2,GL_FLOAT,GL_FALSE,8*sizeof(float),(void*)(6*sizeof(float)));
     glEnableVertexAttribArray(2);
+    
+    
+    unsigned int buffer;
+    glGenBuffers(1,&buffer);
+    glBindBuffer(GL_ARRAY_BUFFER,buffer);
+    glBufferData(GL_ARRAY_BUFFER,amount*sizeof(glm::mat4),&modelMatrices[0],GL_STATIC_DRAW);
+    
+    glEnableVertexAttribArray(3);
+    glVertexAttribPointer(3,4,GL_FLOAT,GL_FALSE,sizeof(glm::mat4),(void*)0);
+    glEnableVertexAttribArray(4);
+    glVertexAttribPointer(4,4,GL_FLOAT,GL_FALSE,sizeof(glm::mat4),(void*)(sizeof(glm::vec4)));
+    glEnableVertexAttribArray(5);
+    glVertexAttribPointer(5,4,GL_FLOAT,GL_FALSE,sizeof(glm::mat4),(void*)(2*sizeof(glm::vec4)));
+    glEnableVertexAttribArray(6);
+    glVertexAttribPointer(6,4,GL_FLOAT,GL_FALSE,sizeof(glm::mat4),(void*)(3*sizeof(glm::vec4)));
+    
+    glVertexAttribDivisor(3,1);
+    glVertexAttribDivisor(4,1);
+    glVertexAttribDivisor(5,1);
+    glVertexAttribDivisor(6,1);
+    
     
     
     unsigned int VBO, VAO;
@@ -580,7 +601,7 @@ int main()
             glUniformMatrix4fv(glGetUniformLocation(lightShader.ID,"model"),1,GL_FALSE,glm::value_ptr(modelMatrices[i]));
             
             glBindVertexArray(lightVAO);
-            glDrawArrays(GL_TRIANGLES, 0, 36);
+            glDrawArraysInstanced(GL_TRIANGLES, 0, 36,amount);
         }
 
 //        glDepthFunc(GL_LEQUAL);
