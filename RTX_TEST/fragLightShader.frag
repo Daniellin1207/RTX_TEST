@@ -39,4 +39,6 @@ void main()
     
     vec3 specular=light.color*spec;
     FragColor=vec4(texture(wall,tex).rgb*0.2+specular*0.8,1.0f);
+    float gamma=2.2;
+    FragColor.rgb=pow(FragColor.rgb,vec3(1/gamma));
 }
