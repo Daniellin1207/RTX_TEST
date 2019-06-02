@@ -5,6 +5,7 @@
 
 #include <iostream>
 #include <cmath>
+#include <string>
 #include "Shader.hpp"
 #include "Camera.hpp"
 #include "Light.hpp"
@@ -21,8 +22,8 @@
 #include "tiny_obj_loader.h"
 
 
-Camera camera(glm::vec3(0,0,0),glm::vec3(0,1,0),250,0);
-Light light(glm::vec3(3,3,0),glm::vec3(-4,-2,-1));
+Camera camera(glm::vec3(2,0,0),glm::vec3(0,1,0),250,0);
+Light light(glm::vec3(5,5,2),glm::vec3(1,1,1));
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow *window);
 void mouse_callback(GLFWwindow *window,double xpos,double ypos);
@@ -100,7 +101,7 @@ int main()
     glEnable(GL_MULTISAMPLE);
     
     Shader ourShader("/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/vertShader.vert","/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/geoShader.frag","/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/fragShader.frag");
-    Shader lightShader("/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/vertLightShader.vert","/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/fragLightShader.frag");
+    Shader lightShader("/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/vertLightShader.vert","/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/geoLightShader.vert","/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/fragLightShader.frag");
     Shader singleShader("/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/vertSingleColorShader.vert","/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/fragSingleColorShader.frag");
     Shader planeShader("/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/vertPlaneShader.vert","/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/fragPlaneShader.frag");
     Shader skyboxShader("/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/vertSkyboxShader.vert","/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/fragSkyboxShader.frag");
@@ -526,27 +527,50 @@ int main()
     
     
     const GLuint SHADOW_WIDTH=1024,SHADOW_HEIGHT=1024;
-    GLuint depthMap;
-    glGenTextures(1, &depthMap);
-    glBindTexture(GL_TEXTURE_2D, depthMap);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, SHADOW_WIDTH, SHADOW_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
-    
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT); // note that we set the container wrapping method to GL_CLAMP_TO_EDGE
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    // set texture filtering parameters
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    
+    GLuint depthCubemap;
+    glGenTextures(1, &depthCubemap);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, depthCubemap);
+    for (int i = 0; i<6; i++) {
+        glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X+i, 0, GL_DEPTH_COMPONENT, SHADOW_WIDTH, SHADOW_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    }
     glActiveTexture(GL_TEXTURE3);
-    glBindTexture(GL_TEXTURE_2D, depthMap);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, depthCubemap);
     
-    unsigned int depthMapFBO;
+    GLuint depthMapFBO;
     glGenFramebuffers(1,&depthMapFBO);
     glBindFramebuffer(GL_FRAMEBUFFER,depthMapFBO);
-    glFramebufferTexture2D(GL_FRAMEBUFFER,GL_DEPTH_ATTACHMENT,GL_TEXTURE_2D,depthMap,0);
+    glFramebufferTexture(GL_FRAMEBUFFER,GL_DEPTH_ATTACHMENT,depthCubemap,0);
     glDrawBuffer(GL_NONE);
     glReadBuffer(GL_NONE);
-    glBindFramebuffer(GL_FRAMEBUFFER,0);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    
+//    const GLuint SHADOW_WIDTH=1024,SHADOW_HEIGHT=1024;
+//    GLuint depthMap;
+//    glGenTextures(1, &depthMap);
+//    glBindTexture(GL_TEXTURE_2D, depthMap);
+//    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, SHADOW_WIDTH, SHADOW_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+//
+//    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT); // note that we set the container wrapping method to GL_CLAMP_TO_EDGE
+//    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+//    // set texture filtering parameters
+//    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+//    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+//
+//    glActiveTexture(GL_TEXTURE3);
+//    glBindTexture(GL_TEXTURE_2D, depthMap);
+//
+//    unsigned int depthMapFBO;
+//    glGenFramebuffers(1,&depthMapFBO);
+//    glBindFramebuffer(GL_FRAMEBUFFER,depthMapFBO);
+//    glFramebufferTexture2D(GL_FRAMEBUFFER,GL_DEPTH_ATTACHMENT,GL_TEXTURE_2D,depthMap,0);
+//    glDrawBuffer(GL_NONE);
+//    glReadBuffer(GL_NONE);
+//    glBindFramebuffer(GL_FRAMEBUFFER,0);
     
 //    unsigned int uniformBlockIndexOur=glGetUniformBlockIndex(ourShader.ID,"Matrices");
 //    unsigned int uniformBlockIndexSkybox=glGetUniformBlockIndex(skyboxShader.ID,"Matrices");
@@ -576,9 +600,25 @@ int main()
     glm::mat4 view=glm::mat4(1.0f);
     glm::mat4 pers=glm::mat4(1.0f);
     
-    glm::mat4 lightView=glm::lookAt(light.Position, light.Position+light.Direction, glm::normalize(glm::cross(light.Direction,glm::normalize(glm::cross(camera.WorldUp,light.Direction)))));
-    glm::mat4 lightPers=glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, 0.1f, 100.0f);
-    glm::mat4 lightMat=lightPers*lightView;
+    GLfloat aspect = (GLfloat)SHADOW_WIDTH/(GLfloat)SHADOW_HEIGHT;
+    GLfloat near = 1.0f;
+    GLfloat far = 25.0f;
+    glm::mat4 lightPers = glm::perspective(glm::radians(90.0f), aspect, near, far);
+    
+    
+    std::vector<glm::mat4> shadowTransforms;
+    shadowTransforms.push_back(lightPers *glm::lookAt(light.Position, light.Position + glm::vec3(1.0,0.0,0.0), glm::vec3(0.0,1.0,0.0)));
+    shadowTransforms.push_back(lightPers *glm::lookAt(light.Position, light.Position + glm::vec3(-1.0,0.0,0.0), glm::vec3(0.0,1.0,0.0)));
+    shadowTransforms.push_back(lightPers *glm::lookAt(light.Position, light.Position + glm::vec3(0.0,1.0,0.0), glm::vec3(0.0,0.0,1.0)));
+    shadowTransforms.push_back(lightPers *glm::lookAt(light.Position, light.Position + glm::vec3(0.0,-1.0,0.0), glm::vec3(0.0,0.0,-1.0)));
+    shadowTransforms.push_back(lightPers *glm::lookAt(light.Position, light.Position + glm::vec3(0.0,0.0,1.0), glm::vec3(0.0,1.0,0.0)));
+    shadowTransforms.push_back(lightPers *glm::lookAt(light.Position, light.Position + glm::vec3(0.0,0.0,-1.0), glm::vec3(0.0,1.0,0.0)));
+//    glm::mat4 lightView=glm::lookAt(light.Position, light.Position+light.Direction, glm::normalize(glm::cross(light.Direction,glm::normalize(glm::cross(camera.WorldUp,light.Direction)))));
+    
+//    glm::mat4 lightPers=glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, 0.1f, 100.0f);
+//    glm::mat4 lightMat=lightPers*lightView;
+    
+    
     
     // render loop
     // -----------
@@ -589,7 +629,6 @@ int main()
         lastFrame=currentFrame;
         processInput(window);
         
-        
 //        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 //        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         
@@ -597,12 +636,14 @@ int main()
         glBindFramebuffer(GL_FRAMEBUFFER,depthMapFBO);
         glClear(GL_DEPTH_BUFFER_BIT);
         
-        
-
         lightShader.use();
-
         model=glm::mat4(1.0f);
-        glUniformMatrix4fv(glGetUniformLocation(lightShader.ID,"lightMat"),1,GL_FALSE,glm::value_ptr(lightMat));
+        for (int i= 0; i<6; i++) {
+            glUniformMatrix4fv(glGetUniformLocation(lightShader.ID,("shadowMatrices["+std::to_string(i)+"]").c_str()),1,GL_FALSE,glm::value_ptr(shadowTransforms[i]));
+        }
+        
+        glUniform1f(glGetUniformLocation(lightShader.ID,"far"),far);
+        glUniform3f(glGetUniformLocation(lightShader.ID,"lightPos"),light.Position.x,light.Position.y,light.Position.z);
         glUniformMatrix4fv(glGetUniformLocation(lightShader.ID,"model"),1,GL_FALSE,glm::value_ptr(model));
         glBindVertexArray(lightVAO);
         glDrawArrays(GL_TRIANGLES, 0, 36);
@@ -620,10 +661,11 @@ int main()
         view=camera.GetViewMatrix();
         pers=glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 1000.0f);
         model=glm::mat4(1.0f);
+        glUniform1f(glGetUniformLocation(depthShader.ID,"far"),far);
         glUniformMatrix4fv(glGetUniformLocation(depthShader.ID,"view"),1,GL_FALSE,glm::value_ptr(view));
         glUniformMatrix4fv(glGetUniformLocation(depthShader.ID,"pers"),1,GL_FALSE,glm::value_ptr(pers));
         glUniformMatrix4fv(glGetUniformLocation(depthShader.ID,"model"),1,GL_FALSE,glm::value_ptr(model));
-        glUniformMatrix4fv(glGetUniformLocation(depthShader.ID,"lightMat"),1,GL_FALSE,glm::value_ptr(lightMat));
+//        glUniformMatrix4fv(glGetUniformLocation(depthShader.ID,"lightMat"),1,GL_FALSE,glm::value_ptr(lightMat));
 
         glUniform3f(glGetUniformLocation(depthShader.ID,"light.pos"),light.Position.x,light.Position.y,light.Position.z);
         glUniform3f(glGetUniformLocation(depthShader.ID,"light.color"),light.Color.x,light.Color.y,light.Color.z);

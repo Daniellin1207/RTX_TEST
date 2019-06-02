@@ -44,6 +44,7 @@
 		656BB3B122A25C2600AD14AC /* Light.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = Light.hpp; sourceTree = "<group>"; };
 		656BB3B322A26A4E00AD14AC /* vertDepthShader.vert */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.glsl; path = vertDepthShader.vert; sourceTree = "<group>"; };
 		656BB3B422A26A5A00AD14AC /* fragDepthShader.frag */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.glsl; path = fragDepthShader.frag; sourceTree = "<group>"; };
+		657CDE8022A3BA4D00D05D82 /* geoLightShader.vert */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.glsl; path = geoLightShader.vert; sourceTree = "<group>"; };
 		65A9DDC7229FDA6800FB7FB8 /* blending_transparent_window.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = blending_transparent_window.png; sourceTree = "<group>"; };
 		65BB806E229A7DF50093B7EC /* RTX_TEST */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = RTX_TEST; sourceTree = BUILT_PRODUCTS_DIR; };
 		65BB8071229A7DF50093B7EC /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
@@ -5732,6 +5733,7 @@
 				650D39DD229D4CA600622B7A /* Camera.cpp */,
 				650D39DE229D4CA600622B7A /* Camera.hpp */,
 				65BD1908229E19260043BAF5 /* vertLightShader.vert */,
+				657CDE8022A3BA4D00D05D82 /* geoLightShader.vert */,
 				65BD1909229E193A0043BAF5 /* fragLightShader.frag */,
 				656BB3B322A26A4E00AD14AC /* vertDepthShader.vert */,
 				656BB3B422A26A5A00AD14AC /* fragDepthShader.frag */,
