@@ -23,7 +23,7 @@
 
 
 Camera camera(glm::vec3(2,0,0),glm::vec3(0,1,0),250,0);
-Light light(glm::vec3(5,5,2),glm::vec3(1,1,1));
+Light light(glm::vec3(5,3,2),glm::vec3(1,2,1));
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow *window);
 void mouse_callback(GLFWwindow *window,double xpos,double ypos);
@@ -607,12 +607,12 @@ int main()
     
     
     std::vector<glm::mat4> shadowTransforms;
-    shadowTransforms.push_back(lightPers *glm::lookAt(light.Position, light.Position + glm::vec3(1.0,0.0,0.0), glm::vec3(0.0,1.0,0.0)));
-    shadowTransforms.push_back(lightPers *glm::lookAt(light.Position, light.Position + glm::vec3(-1.0,0.0,0.0), glm::vec3(0.0,1.0,0.0)));
+    shadowTransforms.push_back(lightPers *glm::lookAt(light.Position, light.Position + glm::vec3(1.0,0.0,0.0), glm::vec3(0.0,-1.0,0.0)));
+    shadowTransforms.push_back(lightPers *glm::lookAt(light.Position, light.Position + glm::vec3(-1.0,0.0,0.0), glm::vec3(0.0,-1.0,0.0)));
     shadowTransforms.push_back(lightPers *glm::lookAt(light.Position, light.Position + glm::vec3(0.0,1.0,0.0), glm::vec3(0.0,0.0,1.0)));
     shadowTransforms.push_back(lightPers *glm::lookAt(light.Position, light.Position + glm::vec3(0.0,-1.0,0.0), glm::vec3(0.0,0.0,-1.0)));
-    shadowTransforms.push_back(lightPers *glm::lookAt(light.Position, light.Position + glm::vec3(0.0,0.0,1.0), glm::vec3(0.0,1.0,0.0)));
-    shadowTransforms.push_back(lightPers *glm::lookAt(light.Position, light.Position + glm::vec3(0.0,0.0,-1.0), glm::vec3(0.0,1.0,0.0)));
+    shadowTransforms.push_back(lightPers *glm::lookAt(light.Position, light.Position + glm::vec3(0.0,0.0,1.0), glm::vec3(0.0,-1.0,0.0)));
+    shadowTransforms.push_back(lightPers *glm::lookAt(light.Position, light.Position + glm::vec3(0.0,0.0,-1.0), glm::vec3(0.0,-1.0,0.0)));
 //    glm::mat4 lightView=glm::lookAt(light.Position, light.Position+light.Direction, glm::normalize(glm::cross(light.Direction,glm::normalize(glm::cross(camera.WorldUp,light.Direction)))));
     
 //    glm::mat4 lightPers=glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, 0.1f, 100.0f);
