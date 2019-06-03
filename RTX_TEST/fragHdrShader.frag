@@ -2,7 +2,8 @@
 
 #version 330 core
 
-out vec4 FragColor;
+layout (location = 0) out vec4 FragColor;
+layout (location = 1) out vec4 BrightColor;
 in vec2 tex;
 in vec3 FragPos;
 
@@ -18,6 +19,11 @@ void main(){
     const float gamma=2.2;
     vec3 hdrColor=lightColor*texture(colorTexture,tex).rgb;
     FragColor=vec4(hdrColor,1.0);
+    if(dot(FragColor.rgb,vec3(0.2,0.7,0.1))>1.0){
+        BrightColor=vec4(FragColor.rgb,1.0f);
+    }else{
+        BrightColor=vec4(0,0,0,1);
+    }
     
 //    FragColor=vec4(texture(colorTexture,tex).rgb,1.0);
     //    vec3 normal=texture(normTexture,tex).rgb;

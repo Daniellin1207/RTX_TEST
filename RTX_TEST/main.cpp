@@ -23,7 +23,7 @@
 
 
 Camera camera(glm::vec3(5,0,0),glm::vec3(0,1,0),-10,0);
-Light light(glm::vec3(5,3,2),glm::vec3(1,2,1),glm::vec3(200.0,1.0,1.0));
+Light light(glm::vec3(5,3,2),glm::vec3(1,2,1),glm::vec3(200.0,200.0,100.0));
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow *window);
 void mouse_callback(GLFWwindow *window,double xpos,double ypos);
@@ -44,7 +44,7 @@ bool firstMouse=true;
 float deltaTime=0.0f;
 float lastFrame=0.0f;
 int blinn=0;
-float exposure=0.0f;
+float exposure=1.0f;
 
 std::vector<std::string > faces{
     "/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/Textures/skybox/left.jpg",
@@ -101,16 +101,17 @@ int main()
     glEnable(GL_PROGRAM_POINT_SIZE);
     glEnable(GL_MULTISAMPLE);
     
-    Shader ourShader("/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/vertShader.vert","/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/geoShader.frag","/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/fragShader.frag");
+//    Shader ourShader("/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/vertShader.vert","/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/geoShader.frag","/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/fragShader.frag");
     Shader lightShader("/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/vertLightShader.vert","/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/geoLightShader.vert","/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/fragLightShader.frag");
-    Shader singleShader("/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/vertSingleColorShader.vert","/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/fragSingleColorShader.frag");
+//    Shader singleShader("/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/vertSingleColorShader.vert","/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/fragSingleColorShader.frag");
     Shader planeShader("/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/vertPlaneShader.vert","/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/fragPlaneShader.frag");
-    Shader skyboxShader("/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/vertSkyboxShader.vert","/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/fragSkyboxShader.frag");
-    Shader pointShader("/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/vertPointShader.vert","/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/fragPointShader.frag");
-    Shader geoShader("/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/vertGeoShader.vert","/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/geoGeoShader.gs","/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/fragGeoShader.frag");
-    Shader depthShader("/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/vertDepthShader.vert","/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/fragDepthShader.frag");
-    Shader normShader("/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/vertNormalShader.vert","/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/fragNormalShader.frag");
+//    Shader skyboxShader("/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/vertSkyboxShader.vert","/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/fragSkyboxShader.frag");
+//    Shader pointShader("/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/vertPointShader.vert","/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/fragPointShader.frag");
+//    Shader geoShader("/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/vertGeoShader.vert","/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/geoGeoShader.gs","/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/fragGeoShader.frag");
+//    Shader depthShader("/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/vertDepthShader.vert","/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/fragDepthShader.frag");
+//    Shader normShader("/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/vertNormalShader.vert","/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/fragNormalShader.frag");
     Shader hdrShader("/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/vertHdrShader.vert","/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/fragHdrShader.frag");
+    Shader blurShader("/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/vertBlurShader.vert","/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/fragBlurShader.frag");
     // set up vertex data (and buffer(s)) and configure vertex attributes
     // ------------------------------------------------------------------
     float lightVertices[] = {
@@ -441,7 +442,7 @@ int main()
     glGenTextures(1,&textureID);
     
     int width, height, nrChannels;
-    unsigned char *data = stbi_load("/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/Textures/brickwall.jpg", &width, &height, &nrChannels, 0);
+    unsigned char *data = stbi_load("/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/Textures/container.jpg", &width, &height, &nrChannels, 0);
     
     if (data)
     {
@@ -524,61 +525,92 @@ int main()
     // frame
     unsigned int hdrFBO;
     glGenFramebuffers(1,&hdrFBO);
-    unsigned int hdrColorBufferTexture;
-    glGenTextures(1, &hdrColorBufferTexture);
-    glBindTexture(GL_TEXTURE_2D,hdrColorBufferTexture);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGB, GL_FLOAT, NULL);
-    
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    
-    unsigned int hdrRbo;
-    glGenRenderbuffers(1,&hdrRbo);
-    glBindRenderbuffer(GL_RENDERBUFFER,hdrRbo);
-    glRenderbufferStorage(GL_RENDERBUFFER,GL_DEPTH_COMPONENT,SCR_WIDTH,SCR_HEIGHT);
-    
     glBindFramebuffer(GL_FRAMEBUFFER,hdrFBO);
-    glFramebufferTexture2D(GL_FRAMEBUFFER,GL_COLOR_ATTACHMENT0,GL_TEXTURE_2D,hdrColorBufferTexture,0);
-    glFramebufferRenderbuffer(GL_FRAMEBUFFER,GL_DEPTH_ATTACHMENT,GL_RENDERBUFFER,hdrRbo);
-    // frame
-    unsigned int framebuffer;
-    glGenFramebuffers(1,&framebuffer);
-    glBindFramebuffer(GL_FRAMEBUFFER,framebuffer);
+    unsigned int hdrColorBufferTexture[2];
+    glGenTextures(2, hdrColorBufferTexture);
+    for (unsigned int i=0; i<2; i++) {
+        
+        glBindTexture(GL_TEXTURE_2D,hdrColorBufferTexture[i]);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGB, GL_FLOAT, NULL);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        
+        glFramebufferTexture2D(GL_FRAMEBUFFER,GL_COLOR_ATTACHMENT0+i, GL_TEXTURE_2D,hdrColorBufferTexture[i],0);
+    }
+    unsigned int rboDepth;
+    glGenRenderbuffers(1,&rboDepth);
+    glBindRenderbuffer(GL_RENDERBUFFER,rboDepth);
+    glRenderbufferStorage(GL_RENDERBUFFER,GL_DEPTH_COMPONENT,SCR_WIDTH,SCR_HEIGHT);
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER,GL_DEPTH_ATTACHMENT,GL_RENDERBUFFER,rboDepth);
     
-    unsigned int textureColorBuffer;
-    glGenTextures(1, &textureColorBuffer);
-    glBindTexture(GL_TEXTURE_2D, textureColorBuffer);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
-    
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    
-    glFramebufferTexture2D(GL_FRAMEBUFFER,GL_COLOR_ATTACHMENT0,GL_TEXTURE_2D,textureColorBuffer,0);
+    unsigned int attachments[2]={GL_COLOR_ATTACHMENT0,GL_COLOR_ATTACHMENT1};
+    glDrawBuffers(2,attachments);
+    if(glCheckFramebufferStatus(GL_FRAMEBUFFER)!=GL_FRAMEBUFFER_COMPLETE){
+        std::cout<<"Framebuffer not complete!"<<std::endl;
+    }
     glBindFramebuffer(GL_FRAMEBUFFER,0);
     
-    // depthFrame
-    unsigned int SHADOW_WIDTH=1024,SHADOW_HEIGHT=1024;
-    unsigned int depthCubemap;
-    glGenTextures(1, &depthCubemap);
-    glBindTexture(GL_TEXTURE_CUBE_MAP, depthCubemap);
-    for (int i = 0; i<6; i++) {
-        glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X+i, 0, GL_DEPTH_COMPONENT, SHADOW_WIDTH, SHADOW_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
-        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    unsigned int blurFBO[2];
+    glGenFramebuffers(2,blurFBO);
+    unsigned int blurTexture[2];
+    glGenTextures(2, blurTexture);
+    for (int i=0; i<2; i++) {
+        glBindFramebuffer(GL_FRAMEBUFFER,blurFBO[i]);
+        glBindTexture(GL_TEXTURE_2D, blurTexture[i]);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGB, GL_FLOAT, NULL);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glFramebufferTexture2D(GL_FRAMEBUFFER,GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,blurTexture[i],0);
     }
-    glActiveTexture(GL_TEXTURE3);
-    glBindTexture(GL_TEXTURE_CUBE_MAP, depthCubemap);
+//    unsigned int hdrRbo;
+//    glGenRenderbuffers(1,&hdrRbo);
+//    glBindRenderbuffer(GL_RENDERBUFFER,hdrRbo);
+//    glRenderbufferStorage(GL_RENDERBUFFER,GL_DEPTH_COMPONENT,SCR_WIDTH,SCR_HEIGHT);
     
-    GLuint depthMapFBO;
-    glGenFramebuffers(1,&depthMapFBO);
-    glBindFramebuffer(GL_FRAMEBUFFER,depthMapFBO);
-    glFramebufferTexture(GL_FRAMEBUFFER,GL_DEPTH_ATTACHMENT,depthCubemap,0);
-    glDrawBuffer(GL_NONE);
-    glReadBuffer(GL_NONE);
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+//    glFramebufferRenderbuffer(GL_FRAMEBUFFER,GL_DEPTH_ATTACHMENT,GL_RENDERBUFFER,hdrRbo);
+    // frame
+//    unsigned int framebuffer;
+//    glGenFramebuffers(1,&framebuffer);
+//    glBindFramebuffer(GL_FRAMEBUFFER,framebuffer);
+//
+//    unsigned int textureColorBuffer;
+//    glGenTextures(1, &textureColorBuffer);
+//    glBindTexture(GL_TEXTURE_2D, textureColorBuffer);
+//    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+//
+//    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+//    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+//
+//    glFramebufferTexture2D(GL_FRAMEBUFFER,GL_COLOR_ATTACHMENT0,GL_TEXTURE_2D,textureColorBuffer,0);
+//    glBindFramebuffer(GL_FRAMEBUFFER,0);
+    
+    // depthFrame
+//    unsigned int SHADOW_WIDTH=1024,SHADOW_HEIGHT=1024;
+//    unsigned int depthCubemap;
+//    glGenTextures(1, &depthCubemap);
+//    glBindTexture(GL_TEXTURE_CUBE_MAP, depthCubemap);
+//    for (int i = 0; i<6; i++) {
+//        glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X+i, 0, GL_DEPTH_COMPONENT, SHADOW_WIDTH, SHADOW_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+//        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+//        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+//        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+//        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+//        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+//    }
+//    glActiveTexture(GL_TEXTURE3);
+//    glBindTexture(GL_TEXTURE_CUBE_MAP, depthCubemap);
+//
+//    GLuint depthMapFBO;
+//    glGenFramebuffers(1,&depthMapFBO);
+//    glBindFramebuffer(GL_FRAMEBUFFER,depthMapFBO);
+//    glFramebufferTexture(GL_FRAMEBUFFER,GL_DEPTH_ATTACHMENT,depthCubemap,0);
+//    glDrawBuffer(GL_NONE);
+//    glReadBuffer(GL_NONE);
+//    glBindFramebuffer(GL_FRAMEBUFFER, 0);
     
 //    const GLuint SHADOW_WIDTH=1024,SHADOW_HEIGHT=1024;
 //    GLuint depthMap;
@@ -631,19 +663,19 @@ int main()
     glm::mat4 view=glm::mat4(1.0f);
     glm::mat4 pers=glm::mat4(1.0f);
     
-    GLfloat aspect = (GLfloat)SHADOW_WIDTH/(GLfloat)SHADOW_HEIGHT;
-    GLfloat near = 1.0f;
-    GLfloat far = 25.0f;
-    glm::mat4 lightPers = glm::perspective(glm::radians(90.0f), aspect, near, far);
+//    GLfloat aspect = (GLfloat)SHADOW_WIDTH/(GLfloat)SHADOW_HEIGHT;
+//    GLfloat near = 1.0f;
+//    GLfloat far = 25.0f;
+//    glm::mat4 lightPers = glm::perspective(glm::radians(90.0f), aspect, near, far);
     
     
-    std::vector<glm::mat4> shadowTransforms;
-    shadowTransforms.push_back(lightPers *glm::lookAt(light.Position, light.Position + glm::vec3(1.0,0.0,0.0), glm::vec3(0.0,-1.0,0.0)));
-    shadowTransforms.push_back(lightPers *glm::lookAt(light.Position, light.Position + glm::vec3(-1.0,0.0,0.0), glm::vec3(0.0,-1.0,0.0)));
-    shadowTransforms.push_back(lightPers *glm::lookAt(light.Position, light.Position + glm::vec3(0.0,1.0,0.0), glm::vec3(0.0,0.0,1.0)));
-    shadowTransforms.push_back(lightPers *glm::lookAt(light.Position, light.Position + glm::vec3(0.0,-1.0,0.0), glm::vec3(0.0,0.0,-1.0)));
-    shadowTransforms.push_back(lightPers *glm::lookAt(light.Position, light.Position + glm::vec3(0.0,0.0,1.0), glm::vec3(0.0,-1.0,0.0)));
-    shadowTransforms.push_back(lightPers *glm::lookAt(light.Position, light.Position + glm::vec3(0.0,0.0,-1.0), glm::vec3(0.0,-1.0,0.0)));
+//    std::vector<glm::mat4> shadowTransforms;
+//    shadowTransforms.push_back(lightPers *glm::lookAt(light.Position, light.Position + glm::vec3(1.0,0.0,0.0), glm::vec3(0.0,-1.0,0.0)));
+//    shadowTransforms.push_back(lightPers *glm::lookAt(light.Position, light.Position + glm::vec3(-1.0,0.0,0.0), glm::vec3(0.0,-1.0,0.0)));
+//    shadowTransforms.push_back(lightPers *glm::lookAt(light.Position, light.Position + glm::vec3(0.0,1.0,0.0), glm::vec3(0.0,0.0,1.0)));
+//    shadowTransforms.push_back(lightPers *glm::lookAt(light.Position, light.Position + glm::vec3(0.0,-1.0,0.0), glm::vec3(0.0,0.0,-1.0)));
+//    shadowTransforms.push_back(lightPers *glm::lookAt(light.Position, light.Position + glm::vec3(0.0,0.0,1.0), glm::vec3(0.0,-1.0,0.0)));
+//    shadowTransforms.push_back(lightPers *glm::lookAt(light.Position, light.Position + glm::vec3(0.0,0.0,-1.0), glm::vec3(0.0,-1.0,0.0)));
 //    glm::mat4 lightView=glm::lookAt(light.Position, light.Position+light.Direction, glm::normalize(glm::cross(light.Direction,glm::normalize(glm::cross(camera.WorldUp,light.Direction)))));
     
 //    glm::mat4 lightPers=glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, 0.1f, 100.0f);
@@ -663,11 +695,17 @@ int main()
 //        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 //        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         
-        glBindFramebuffer(GL_FRAMEBUFFER,hdrFBO);
-//        glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         
+        
+        glBindFramebuffer(GL_FRAMEBUFFER,hdrFBO);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+        
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, texture[0]);
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, texture[1]);
+
         model=glm::mat4(1.0f);
         view=camera.GetViewMatrix();
         pers=glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH/(float)SCR_HEIGHT, 0.1f, 1000.0f);
@@ -681,28 +719,60 @@ int main()
         glUniform3f(glGetUniformLocation(hdrShader.ID,"lightPos"),light.Position.x,light.Position.y,light.Position.z);
         glUniform3f(glGetUniformLocation(hdrShader.ID,"lightColor"),light.Color.x,light.Color.y,light.Color.z);
         glUniform3f(glGetUniformLocation(hdrShader.ID,"viewPos"),camera.Position.x,camera.Position.y,camera.Position.z);
-        glUniform1f(glGetUniformLocation(hdrShader.ID,"exposure"),exposure);
-        
+//        glUniform1f(glGetUniformLocation(hdrShader.ID,"exposure"),exposure);
         glBindVertexArray(lightVAO);
         glDrawArrays(GL_TRIANGLES, 0, 36);
         
+        model=glm::translate(model, glm::vec3(0,-1.5,0));
+        glUniformMatrix4fv(glGetUniformLocation(hdrShader.ID,"model"),1,GL_FALSE,glm::value_ptr(model));
+        glUniform3f(glGetUniformLocation(hdrShader.ID,"lightColor"),1.0,1.0,1.0);
+        glDrawArrays(GL_TRIANGLES, 0, 36);
+        
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, hdrColorBufferTexture[0]);
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, hdrColorBufferTexture[1]);
+        //===========================================
+        int n=0;
+        
+        blurShader.use();
+        glBindVertexArray(planeVAO);
+        glUniform1i(glGetUniformLocation(blurShader.ID,"frame"),1);
+        for (int i=0; i<21; i++) {
+            glBindFramebuffer(GL_FRAMEBUFFER,blurFBO[n]);
+            glViewport(0,0,SCR_WIDTH,SCR_HEIGHT);
+//            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+            glDrawArrays(GL_TRIANGLES, 0, 6);
+            
+            glActiveTexture(GL_TEXTURE1);
+            glBindTexture(GL_TEXTURE_2D, blurTexture[n]);
+            n=1-n;
+        }
+
         
         
         
-        
-        
+        //===========================================
         glBindFramebuffer(GL_FRAMEBUFFER,0);
         glViewport(0,0,SCR_WIDTH*2,SCR_HEIGHT*2);
-        glClearColor(1.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         
-        glActiveTexture(GL_TEXTURE3);
-        glBindTexture(GL_TEXTURE_2D, hdrColorBufferTexture);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, hdrColorBufferTexture[0]);
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, blurTexture[0]);
+        
         planeShader.use();
-        glUniform1i(glGetUniformLocation(planeShader.ID,"frame"),3);
-        glUniform1f(glGetUniformLocation(planeShader.ID,"exposure"),exposure);
+        glUniform1i(glGetUniformLocation(planeShader.ID,"frame1"),0);
+        glUniform1i(glGetUniformLocation(planeShader.ID,"frame2"),1);
+//        glUniform1f(glGetUniformLocation(planeShader.ID,"exposure"),exposure);
+        
         glBindVertexArray(planeVAO);
         glDrawArrays(GL_TRIANGLES, 0, 6);
+        
+        
+        
+        
 //        normShader.use();
 //        glUniform1i(glGetUniformLocation(normShader.ID,"colorTexture"),0);
 //        glUniform1i(glGetUniformLocation(normShader.ID,"heightTexture"),1);

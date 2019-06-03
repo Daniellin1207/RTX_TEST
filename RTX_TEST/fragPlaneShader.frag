@@ -4,18 +4,20 @@
 out vec4 FragColor;
 in vec2 tex;
 
-uniform sampler2D frame;
-uniform float exposure;
+uniform sampler2D frame1;
+uniform sampler2D frame2;
+//uniform float exposure;
 
 void main(){
-//    vec3 color=texture(frame,tex).rgb;
+    vec3 color1=texture(frame1,tex).rgb;
+    vec3 color2=texture(frame2,vec2(tex.x,1-tex.y)).rgb;
 //    FragColor=vec4(color/(color+1),1.0);
     
-    const float gamma=2.2;
-    vec3 hdrColor=texture(frame,tex).rgb;
-    vec3 mapped=vec3(1.0)-exp(-hdrColor*exposure);
-    mapped=pow(mapped,vec3(1.0/gamma));
-    FragColor=vec4(mapped,1.0);
+//    const float gamma=2.2;
+    vec3 hdrColor=mix(color1,color2,0.3);
+//    vec3 mapped=vec3(1.0)-exp(-hdrColor*exposure);
+//    mapped=pow(mapped,vec3(1.0/gamma));
+    FragColor=vec4(hdrColor.rgb,1.0);
 }
 
 

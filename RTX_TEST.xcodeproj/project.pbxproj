@@ -5684,6 +5684,8 @@
 		65F77C8422A4BB79007C35BE /* parallax_mapping_height_map.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = parallax_mapping_height_map.png; sourceTree = "<group>"; };
 		65F77C8522A4C24F007C35BE /* vertHdrShader.vert */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.glsl; path = vertHdrShader.vert; sourceTree = "<group>"; };
 		65F77C8622A4C25D007C35BE /* fragHdrShader.frag */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.glsl; path = fragHdrShader.frag; sourceTree = "<group>"; };
+		65F77C8722A509A1007C35BE /* vertBlurShader.vert */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.glsl; path = vertBlurShader.vert; sourceTree = "<group>"; };
+		65F77C8822A509E5007C35BE /* fragBlurShader.frag */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.glsl; path = fragBlurShader.frag; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -5762,6 +5764,8 @@
 				65F77C8122A4A415007C35BE /* fragNormalShader.frag */,
 				65F77C8522A4C24F007C35BE /* vertHdrShader.vert */,
 				65F77C8622A4C25D007C35BE /* fragHdrShader.frag */,
+				65F77C8722A509A1007C35BE /* vertBlurShader.vert */,
+				65F77C8822A509E5007C35BE /* fragBlurShader.frag */,
 			);
 			path = RTX_TEST;
 			sourceTree = "<group>";
