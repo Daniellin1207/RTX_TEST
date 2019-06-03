@@ -5681,6 +5681,7 @@
 		65F77C8122A4A415007C35BE /* fragNormalShader.frag */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.glsl; path = fragNormalShader.frag; sourceTree = "<group>"; };
 		65F77C8222A4AC30007C35BE /* brickwall.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = brickwall.jpg; sourceTree = "<group>"; };
 		65F77C8322A4AC30007C35BE /* brickwall_normal.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = brickwall_normal.jpg; sourceTree = "<group>"; };
+		65F77C8422A4BB79007C35BE /* parallax_mapping_height_map.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = parallax_mapping_height_map.png; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -12432,6 +12433,7 @@
 		65BB96ED229BCAB20093B7EC /* Textures */ = {
 			isa = PBXGroup;
 			children = (
+				65F77C8422A4BB79007C35BE /* parallax_mapping_height_map.png */,
 				65F77C8322A4AC30007C35BE /* brickwall_normal.jpg */,
 				65F77C8222A4AC30007C35BE /* brickwall.jpg */,
 				6501CF29229FD29D0066F8CF /* grass.png */,

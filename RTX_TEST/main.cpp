@@ -463,7 +463,7 @@ int main()
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     
 //    stbi_set_flip_vertically_on_load(true);
-    unsigned char *data1 = stbi_load("/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/Textures/brickwall_normal.jpg", &width, &height, &nrChannels, 0);
+    unsigned char *data1 = stbi_load("/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/Textures/parallax_mapping_height_map.png", &width, &height, &nrChannels, 0);
     if (data1)
     {
         glBindTexture(GL_TEXTURE_2D, texture[1]);
@@ -648,7 +648,8 @@ int main()
         pers=glm::perspective(glm::radians(45.0f), SCR_WIDTH/(float)SCR_HEIGHT, 0.1f, 1000.0f);
         normShader.use();
         glUniform1i(glGetUniformLocation(normShader.ID,"colorTexture"),0);
-        glUniform1i(glGetUniformLocation(normShader.ID,"normTexture"),1);
+        glUniform1i(glGetUniformLocation(normShader.ID,"heightTexture"),1);
+        glUniform1f(glGetUniformLocation(normShader.ID,"heightScale"),0.5);
         
         glUniformMatrix4fv(glGetUniformLocation(normShader.ID,"model"),1,GL_FALSE,glm::value_ptr(model));
         glUniformMatrix4fv(glGetUniformLocation(normShader.ID,"view"),1,GL_FALSE,glm::value_ptr(view));
