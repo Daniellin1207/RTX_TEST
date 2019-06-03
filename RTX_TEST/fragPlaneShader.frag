@@ -5,10 +5,17 @@ out vec4 FragColor;
 in vec2 tex;
 
 uniform sampler2D frame;
+uniform float exposure;
 
 void main(){
-    vec3 color=texture(frame,tex).rgb;
-    FragColor=vec4(color/(color+1),1.0);
+//    vec3 color=texture(frame,tex).rgb;
+//    FragColor=vec4(color/(color+1),1.0);
+    
+    const float gamma=2.2;
+    vec3 hdrColor=texture(frame,tex).rgb;
+    vec3 mapped=vec3(1.0)-exp(-hdrColor*exposure);
+    mapped=pow(mapped,vec3(1.0/gamma));
+    FragColor=vec4(mapped,1.0);
 }
 
 

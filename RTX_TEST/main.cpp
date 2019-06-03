@@ -23,7 +23,7 @@
 
 
 Camera camera(glm::vec3(5,0,0),glm::vec3(0,1,0),-10,0);
-Light light(glm::vec3(5,3,2),glm::vec3(1,2,1),glm::vec3(200.0,180.0,20.0));
+Light light(glm::vec3(5,3,2),glm::vec3(1,2,1),glm::vec3(200.0,1.0,1.0));
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow *window);
 void mouse_callback(GLFWwindow *window,double xpos,double ypos);
@@ -44,6 +44,7 @@ bool firstMouse=true;
 float deltaTime=0.0f;
 float lastFrame=0.0f;
 int blinn=0;
+float exposure=0.0f;
 
 std::vector<std::string > faces{
     "/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/Textures/skybox/left.jpg",
@@ -676,10 +677,11 @@ int main()
         glUniformMatrix4fv(glGetUniformLocation(hdrShader.ID,"view"),1,GL_FALSE,glm::value_ptr(view));
         glUniformMatrix4fv(glGetUniformLocation(hdrShader.ID,"pers"),1,GL_FALSE,glm::value_ptr(pers));
         
-        glUniform1i(glGetUniformLocation(hdrShader.ID,"colorTexture"),1);
+        glUniform1i(glGetUniformLocation(hdrShader.ID,"colorTexture"),0);
         glUniform3f(glGetUniformLocation(hdrShader.ID,"lightPos"),light.Position.x,light.Position.y,light.Position.z);
         glUniform3f(glGetUniformLocation(hdrShader.ID,"lightColor"),light.Color.x,light.Color.y,light.Color.z);
         glUniform3f(glGetUniformLocation(hdrShader.ID,"viewPos"),camera.Position.x,camera.Position.y,camera.Position.z);
+        glUniform1f(glGetUniformLocation(hdrShader.ID,"exposure"),exposure);
         
         glBindVertexArray(lightVAO);
         glDrawArrays(GL_TRIANGLES, 0, 36);
@@ -694,10 +696,11 @@ int main()
         glClearColor(1.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         
-        glActiveTexture(GL_TEXTURE0);
+        glActiveTexture(GL_TEXTURE3);
         glBindTexture(GL_TEXTURE_2D, hdrColorBufferTexture);
         planeShader.use();
-        glUniform1i(glGetUniformLocation(planeShader.ID,"frame"),0);
+        glUniform1i(glGetUniformLocation(planeShader.ID,"frame"),3);
+        glUniform1f(glGetUniformLocation(planeShader.ID,"exposure"),exposure);
         glBindVertexArray(planeVAO);
         glDrawArrays(GL_TRIANGLES, 0, 6);
 //        normShader.use();
@@ -799,6 +802,10 @@ void processInput(GLFWwindow *window)
         camera.ProcessKeyboard(BACKWARD, deltaTime);
     if (glfwGetKey(window, GLFW_KEY_B) == GLFW_PRESS)
         blinn=1-blinn;
+    if (glfwGetKey(window, GLFW_KEY_M) == GLFW_PRESS)
+        exposure+=0.003;
+    if (glfwGetKey(window, GLFW_KEY_N) == GLFW_PRESS)
+        exposure-=0.002;
 }
 
 void mouse_callback(GLFWwindow *window,double xpos,double ypos)

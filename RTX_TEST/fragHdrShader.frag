@@ -12,12 +12,14 @@ uniform vec3 lightPos;
 uniform vec3 viewPos;
 uniform vec3 lightColor;
 
+uniform float exposure;
+
 void main(){
+    const float gamma=2.2;
     vec3 hdrColor=lightColor*texture(colorTexture,tex).rgb;
-    vec3 mapped=hdrColor/(hdrColor+vec3(1.0));
-    FragColor=vec4(mapped,1.0);
+    FragColor=vec4(hdrColor,1.0);
     
-    FragColor=vec4(texture(colorTexture,tex).rgb,1.0);
+//    FragColor=vec4(texture(colorTexture,tex).rgb,1.0);
     //    vec3 normal=texture(normTexture,tex).rgb;
     //    normal=normalize(normal*2-1.0);
     //
