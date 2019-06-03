@@ -5676,6 +5676,11 @@
 		65E366A322A0C3E20010A2E1 /* front.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = front.jpg; sourceTree = "<group>"; };
 		65E366A422A10B9E0010A2E1 /* vertPointShader.vert */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.glsl; path = vertPointShader.vert; sourceTree = "<group>"; };
 		65E366A522A10BAE0010A2E1 /* fragPointShader.frag */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.glsl; path = fragPointShader.frag; sourceTree = "<group>"; };
+		65F77C7F22A4A345007C35BE /* normal_mapping_normal_map.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = normal_mapping_normal_map.png; sourceTree = "<group>"; };
+		65F77C8022A4A406007C35BE /* vertNormalShader.vert */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.glsl; path = vertNormalShader.vert; sourceTree = "<group>"; };
+		65F77C8122A4A415007C35BE /* fragNormalShader.frag */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.glsl; path = fragNormalShader.frag; sourceTree = "<group>"; };
+		65F77C8222A4AC30007C35BE /* brickwall.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = brickwall.jpg; sourceTree = "<group>"; };
+		65F77C8322A4AC30007C35BE /* brickwall_normal.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = brickwall_normal.jpg; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -5750,6 +5755,8 @@
 				652AC58922A1889800085591 /* fragGeoShader.frag */,
 				656BB3B022A25C2600AD14AC /* Light.cpp */,
 				656BB3B122A25C2600AD14AC /* Light.hpp */,
+				65F77C8022A4A406007C35BE /* vertNormalShader.vert */,
+				65F77C8122A4A415007C35BE /* fragNormalShader.frag */,
 			);
 			path = RTX_TEST;
 			sourceTree = "<group>";
@@ -12425,14 +12432,17 @@
 		65BB96ED229BCAB20093B7EC /* Textures */ = {
 			isa = PBXGroup;
 			children = (
-				65E3669C22A0C3E20010A2E1 /* skybox */,
+				65F77C8322A4AC30007C35BE /* brickwall_normal.jpg */,
+				65F77C8222A4AC30007C35BE /* brickwall.jpg */,
 				6501CF29229FD29D0066F8CF /* grass.png */,
+				65F77C7F22A4A345007C35BE /* normal_mapping_normal_map.png */,
 				65BD190B229E6EF40043BAF5 /* matrix.jpg */,
 				65BD190A229E6C470043BAF5 /* container2_specular.png */,
 				65BB96F0229BCE200093B7EC /* awesomeface.png */,
 				65A9DDC7229FDA6800FB7FB8 /* blending_transparent_window.png */,
 				65BB96EF229BCADA0093B7EC /* container.jpg */,
 				65BB96EE229BCAB20093B7EC /* wall.jpg */,
+				65E3669C22A0C3E20010A2E1 /* skybox */,
 			);
 			path = Textures;
 			sourceTree = "<group>";
