@@ -22,8 +22,8 @@
 #include "tiny_obj_loader.h"
 
 
-Camera camera(glm::vec3(2,0,0),glm::vec3(0,1,0),250,0);
-Light light(glm::vec3(5,3,2),glm::vec3(1,2,1));
+Camera camera(glm::vec3(5,0,0),glm::vec3(0,1,0),-10,0);
+Light light(glm::vec3(5,3,2),glm::vec3(1,2,1),glm::vec3(200.0,180.0,20.0));
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow *window);
 void mouse_callback(GLFWwindow *window,double xpos,double ypos);
@@ -109,6 +109,7 @@ int main()
     Shader geoShader("/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/vertGeoShader.vert","/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/geoGeoShader.gs","/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/fragGeoShader.frag");
     Shader depthShader("/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/vertDepthShader.vert","/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/fragDepthShader.frag");
     Shader normShader("/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/vertNormalShader.vert","/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/fragNormalShader.frag");
+    Shader hdrShader("/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/vertHdrShader.vert","/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/fragHdrShader.frag");
     // set up vertex data (and buffer(s)) and configure vertex attributes
     // ------------------------------------------------------------------
     float lightVertices[] = {
@@ -158,13 +159,13 @@ int main()
     
     float planeVertices[] = {
         // positions         // texture Coords (swapped y coordinates because texture is flipped upside down)
-        -0.05f,  0.05,  0.0f,  0.0f,  0.0f,
-        -0.05f, -0.05,  0.0f,  0.0f,  1.0f,
-         0.05f, -0.05,  0.0f,  1.0f,  1.0f,
+        -1.0f,  1.0,  0.0f,  0.0f,  0.0f,
+        -1.0f, -1.0,  0.0f,  0.0f,  1.0f,
+         1.0f, -1.0,  0.0f,  1.0f,  1.0f,
         
-        -0.05f,  0.05,  0.0f,  0.0f,  0.0f,
-         0.05f, -0.05,  0.0f,  1.0f,  1.0f,
-         0.05f,  0.05,  0.0f,  1.0f,  0.0f
+        -1.0f,  1.0,  0.0f,  0.0f,  0.0f,
+         1.0f, -1.0,  0.0f,  1.0f,  1.0f,
+         1.0f,  1.0,  0.0f,  1.0f,  0.0f
     };
     
     float skyboxVertices[] = {
@@ -519,8 +520,26 @@ int main()
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     
-
+    // frame
+    unsigned int hdrFBO;
+    glGenFramebuffers(1,&hdrFBO);
+    unsigned int hdrColorBufferTexture;
+    glGenTextures(1, &hdrColorBufferTexture);
+    glBindTexture(GL_TEXTURE_2D,hdrColorBufferTexture);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGB, GL_FLOAT, NULL);
     
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    
+    unsigned int hdrRbo;
+    glGenRenderbuffers(1,&hdrRbo);
+    glBindRenderbuffer(GL_RENDERBUFFER,hdrRbo);
+    glRenderbufferStorage(GL_RENDERBUFFER,GL_DEPTH_COMPONENT,SCR_WIDTH,SCR_HEIGHT);
+    
+    glBindFramebuffer(GL_FRAMEBUFFER,hdrFBO);
+    glFramebufferTexture2D(GL_FRAMEBUFFER,GL_COLOR_ATTACHMENT0,GL_TEXTURE_2D,hdrColorBufferTexture,0);
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER,GL_DEPTH_ATTACHMENT,GL_RENDERBUFFER,hdrRbo);
+    // frame
     unsigned int framebuffer;
     glGenFramebuffers(1,&framebuffer);
     glBindFramebuffer(GL_FRAMEBUFFER,framebuffer);
@@ -536,9 +555,9 @@ int main()
     glFramebufferTexture2D(GL_FRAMEBUFFER,GL_COLOR_ATTACHMENT0,GL_TEXTURE_2D,textureColorBuffer,0);
     glBindFramebuffer(GL_FRAMEBUFFER,0);
     
-    
-    const GLuint SHADOW_WIDTH=1024,SHADOW_HEIGHT=1024;
-    GLuint depthCubemap;
+    // depthFrame
+    unsigned int SHADOW_WIDTH=1024,SHADOW_HEIGHT=1024;
+    unsigned int depthCubemap;
     glGenTextures(1, &depthCubemap);
     glBindTexture(GL_TEXTURE_CUBE_MAP, depthCubemap);
     for (int i = 0; i<6; i++) {
@@ -640,27 +659,65 @@ int main()
         lastFrame=currentFrame;
         processInput(window);
         
-        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+//        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+//        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        
+        glBindFramebuffer(GL_FRAMEBUFFER,hdrFBO);
+//        glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         
         model=glm::mat4(1.0f);
         view=camera.GetViewMatrix();
-        pers=glm::perspective(glm::radians(45.0f), SCR_WIDTH/(float)SCR_HEIGHT, 0.1f, 1000.0f);
-        normShader.use();
-        glUniform1i(glGetUniformLocation(normShader.ID,"colorTexture"),0);
-        glUniform1i(glGetUniformLocation(normShader.ID,"heightTexture"),1);
-        glUniform1f(glGetUniformLocation(normShader.ID,"heightScale"),0.5);
+        pers=glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH/(float)SCR_HEIGHT, 0.1f, 1000.0f);
         
-        glUniformMatrix4fv(glGetUniformLocation(normShader.ID,"model"),1,GL_FALSE,glm::value_ptr(model));
-        glUniformMatrix4fv(glGetUniformLocation(normShader.ID,"view"),1,GL_FALSE,glm::value_ptr(view));
-        glUniformMatrix4fv(glGetUniformLocation(normShader.ID,"pers"),1,GL_FALSE,glm::value_ptr(pers));
+        hdrShader.use();
+        glUniformMatrix4fv(glGetUniformLocation(hdrShader.ID,"model"),1,GL_FALSE,glm::value_ptr(model));
+        glUniformMatrix4fv(glGetUniformLocation(hdrShader.ID,"view"),1,GL_FALSE,glm::value_ptr(view));
+        glUniformMatrix4fv(glGetUniformLocation(hdrShader.ID,"pers"),1,GL_FALSE,glm::value_ptr(pers));
         
-        glUniform3f(glGetUniformLocation(normShader.ID,"lightPos"),light.Position.x,light.Position.y,light.Position.z);
-        glUniform3f(glGetUniformLocation(normShader.ID,"viewPos"),camera.Position.x,camera.Position.y,camera.Position.z);
-        
+        glUniform1i(glGetUniformLocation(hdrShader.ID,"colorTexture"),1);
+        glUniform3f(glGetUniformLocation(hdrShader.ID,"lightPos"),light.Position.x,light.Position.y,light.Position.z);
+        glUniform3f(glGetUniformLocation(hdrShader.ID,"lightColor"),light.Color.x,light.Color.y,light.Color.z);
+        glUniform3f(glGetUniformLocation(hdrShader.ID,"viewPos"),camera.Position.x,camera.Position.y,camera.Position.z);
         
         glBindVertexArray(lightVAO);
         glDrawArrays(GL_TRIANGLES, 0, 36);
+        
+        
+        
+        
+        
+        
+        glBindFramebuffer(GL_FRAMEBUFFER,0);
+        glViewport(0,0,SCR_WIDTH*2,SCR_HEIGHT*2);
+        glClearColor(1.2f, 0.3f, 0.3f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, hdrColorBufferTexture);
+        planeShader.use();
+        glUniform1i(glGetUniformLocation(planeShader.ID,"frame"),0);
+        glBindVertexArray(planeVAO);
+        glDrawArrays(GL_TRIANGLES, 0, 6);
+//        normShader.use();
+//        glUniform1i(glGetUniformLocation(normShader.ID,"colorTexture"),0);
+//        glUniform1i(glGetUniformLocation(normShader.ID,"heightTexture"),1);
+//        glUniform1f(glGetUniformLocation(normShader.ID,"heightScale"),0.5);
+//
+//        glUniformMatrix4fv(glGetUniformLocation(normShader.ID,"model"),1,GL_FALSE,glm::value_ptr(model));
+//        glUniformMatrix4fv(glGetUniformLocation(normShader.ID,"view"),1,GL_FALSE,glm::value_ptr(view));
+//        glUniformMatrix4fv(glGetUniformLocation(normShader.ID,"pers"),1,GL_FALSE,glm::value_ptr(pers));
+//
+//        glUniform3f(glGetUniformLocation(normShader.ID,"lightPos"),light.Position.x,light.Position.y,light.Position.z);
+//        glUniform3f(glGetUniformLocation(normShader.ID,"viewPos"),camera.Position.x,camera.Position.y,camera.Position.z);
+//
+//
+//        glBindVertexArray(lightVAO);
+//        glDrawArrays(GL_TRIANGLES, 0, 36);
+        
+        
+        
 //        glViewport(0,0,SHADOW_WIDTH,SHADOW_HEIGHT);
 //        glBindFramebuffer(GL_FRAMEBUFFER,depthMapFBO);
 //        glClear(GL_DEPTH_BUFFER_BIT);

@@ -2,10 +2,13 @@
 
 #version 330 core
 out vec4 FragColor;
-in vec3 fColor;
+in vec2 tex;
+
+uniform sampler2D frame;
 
 void main(){
-    FragColor=vec4(fColor,1.0);
+    vec3 color=texture(frame,tex).rgb;
+    FragColor=vec4(color/(color+1),1.0);
 }
 
 
