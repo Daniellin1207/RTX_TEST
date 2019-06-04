@@ -46,6 +46,9 @@
 		656BB3B422A26A5A00AD14AC /* fragDepthShader.frag */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.glsl; path = fragDepthShader.frag; sourceTree = "<group>"; };
 		657CDE8022A3BA4D00D05D82 /* geoLightShader.vert */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.glsl; path = geoLightShader.vert; sourceTree = "<group>"; };
 		65A9DDC7229FDA6800FB7FB8 /* blending_transparent_window.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = blending_transparent_window.png; sourceTree = "<group>"; };
+		65B6F34E22A5F8B200F5BECC /* vertGbufferShader */ = {isa = PBXFileReference; lastKnownFileType = text; path = vertGbufferShader; sourceTree = "<group>"; };
+		65B6F34F22A5F8C200F5BECC /* vertGbufferShader.vert */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.glsl; path = vertGbufferShader.vert; sourceTree = "<group>"; };
+		65B6F35022A5F8D200F5BECC /* fragGbufferShader.frag */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.glsl; path = fragGbufferShader.frag; sourceTree = "<group>"; };
 		65BB806E229A7DF50093B7EC /* RTX_TEST */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = RTX_TEST; sourceTree = BUILT_PRODUCTS_DIR; };
 		65BB8071229A7DF50093B7EC /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		65BB8079229A7E890093B7EC /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = System/Library/Frameworks/OpenGL.framework; sourceTree = SDKROOT; };
@@ -5770,6 +5773,9 @@
 				65F77C8822A509E5007C35BE /* fragBlurShader.frag */,
 				65F77C8922A558DD007C35BE /* vertEasyShader.vert */,
 				65F77C8A22A558EB007C35BE /* fragEasyShader.frag */,
+				65B6F34E22A5F8B200F5BECC /* vertGbufferShader */,
+				65B6F34F22A5F8C200F5BECC /* vertGbufferShader.vert */,
+				65B6F35022A5F8D200F5BECC /* fragGbufferShader.frag */,
 			);
 			path = RTX_TEST;
 			sourceTree = "<group>";
