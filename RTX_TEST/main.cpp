@@ -29,6 +29,7 @@ void processInput(GLFWwindow *window);
 void mouse_callback(GLFWwindow *window,double xpos,double ypos);
 void scroll_callback(GLFWwindow *window,double xoffset,double yoffset);
 unsigned int generateTex(std::string path);
+unsigned int generateTex(std::string path,GLuint format);
 unsigned int generateCubeTex(std::vector<std::string> faces);
 unsigned int generateVAO(float* points,int size,const int x,const int y,const int z);
 unsigned int generateVAO(float* points,int size,const int x,const int y);
@@ -117,6 +118,7 @@ int main()
     Shader easyShader("/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/vertEasyShader.vert","/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/fragEasyShader.frag");
     Shader gBufferShader("/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/vertGbufferShader.vert","/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/fragGbufferShader.frag");
     Shader pbrShader("/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/vertPbrShader.vert","/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/fragPbrShader.frag");
+    Shader equToCubeShader("/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/vertEquToCube.vert","/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/fragEquToCube.frag");
     // set up vertex data (and buffer(s)) and configure vertex attributes
     // ------------------------------------------------------------------
     float lightVertices[] = {
@@ -446,13 +448,25 @@ int main()
     
     unsigned int texture[3];
     glGenTextures(3, texture);
+    unsigned int pbrTextures[5];
+    glGenTextures(5, pbrTextures);
     unsigned int textureID;
     glGenTextures(1,&textureID);
+    unsigned int textureSphere;
+    glGenTextures(1,&textureSphere);
     
 //    stbi_set_flip_vertically_on_load(true);
     texture[0]=generateTex("/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/Textures/container.jpg");
     texture[1]=generateTex("/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/Textures/parallax_mapping_height_map.png");
     texture[2]=generateTex("/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/Textures/blending_transparent_window.png");
+    
+    pbrTextures[0]=generateTex("/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/Textures/rustediron1-alt2-Unreal-Engine/rustediron2_roughness.png");
+    pbrTextures[1]=generateTex("/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/Textures/rustediron1-alt2-Unreal-Engine/rustediron2_normal.png");
+    pbrTextures[2]=generateTex("/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/Textures/rustediron1-alt2-Unreal-Engine/rustediron2_basecolor.png");
+    pbrTextures[3]=generateTex("/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/Textures/rustediron1-alt2-Unreal-Engine/rustediron2_metallic.png");
+
+    stbi_set_flip_vertically_on_load(true);
+    textureSphere=generateTex("/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/Textures/Arches_E_PineTree/Arches_E_PineTree_8k.jpg", 0);
     
     std::vector<std::string > faces{
         "/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/Textures/skybox/left.jpg",
@@ -470,94 +484,60 @@ int main()
     glBindTexture(GL_TEXTURE_2D, texture[1]);
     glActiveTexture(GL_TEXTURE2);
     glBindTexture(GL_TEXTURE_2D, texture[2]);
-    glActiveTexture(GL_TEXTURE3);
-    glBindTexture(GL_TEXTURE_CUBE_MAP,textureID);
+    glActiveTexture(GL_TEXTURE6);
+    glBindTexture(GL_TEXTURE_2D, textureSphere);
     
-// frame
-    unsigned int hdrFBO;
-    unsigned int hdrColorBufferTexture[2];
-    FRAME frame=generateFBO(2);
-    hdrFBO=frame.fbo;
-    for (int i=0; i<2; i++) {
-        hdrColorBufferTexture[i]=frame.textures[i];
+    
+    unsigned int captureFBO,captureRBO;
+    glGenFramebuffers(1,&captureFBO);
+    glGenFramebuffers(1,&captureRBO);
+    glBindFramebuffer(GL_FRAMEBUFFER,captureFBO);
+    glBindRenderbuffer(GL_RENDERBUFFER,captureRBO);
+    glRenderbufferStorage(GL_RENDERBUFFER,GL_DEPTH_COMPONENT24,512,512);
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER,GL_DEPTH_ATTACHMENT,GL_RENDERBUFFER,captureRBO);
+    
+    unsigned int envCubemap;
+    glGenTextures(1, &envCubemap);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, envCubemap);
+    for (int i=0; i<6; i++) {
+        glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X+i, 0, GL_RGB16F, 512, 512, 0, GL_RGB, GL_FLOAT, NULL);
     }
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    
+    glm::mat4 captureProjection = glm::perspective(glm::radians(90.0f), 1.0f, 0.1f, 10.0f);
+    glm::mat4 captureViews[] =
+    {
+        glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3( 1.0f,  0.0f,  0.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
+        glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(-1.0f,  0.0f,  0.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
+        glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3( 0.0f,  1.0f,  0.0f), glm::vec3(0.0f,  0.0f,  1.0f)),
+        glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3( 0.0f, -1.0f,  0.0f), glm::vec3(0.0f,  0.0f, -1.0f)),
+        glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3( 0.0f,  0.0f,  1.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
+        glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3( 0.0f,  0.0f, -1.0f), glm::vec3(0.0f, -1.0f,  0.0f))
+    };
+    
+    glViewport(0, 0, 512, 512);
+    glBindFramebuffer(GL_FRAMEBUFFER,captureFBO);
+    
+    equToCubeShader.use();
+    glActiveTexture(GL_TEXTURE6);
+    glBindTexture(GL_TEXTURE_2D, textureSphere);
+    glUniformMatrix4fv(glGetUniformLocation(equToCubeShader.ID,"pers"),1,GL_FALSE,glm::value_ptr(captureProjection));
+    glUniform1i(glGetUniformLocation(equToCubeShader.ID,"skybox"),6);
+    glBindVertexArray(lightVAO);
+    for (int i=0; i<6; i++) {
+        glUniformMatrix4fv(glGetUniformLocation(equToCubeShader.ID,"view"),1,GL_FALSE,glm::value_ptr(captureViews[i]));
+        glFramebufferTexture2D(GL_FRAMEBUFFER,GL_COLOR_ATTACHMENT0,GL_TEXTURE_CUBE_MAP_POSITIVE_X+i,envCubemap,0);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glDrawArrays(GL_TRIANGLES, 0, 36);
+    }
+    
 
-    
-    unsigned int blurFBO[2];
-    unsigned int blurTexture[2];
-    for (int i=0; i<2; i++) {
-        frame=generateFBO(1);
-        blurFBO[i]=frame.fbo;
-        blurTexture[i]=frame.textures[0];
-    }
-    
-    
-    
-    
-//    unsigned int gBuffer;
-//    unsigned int gPositionDepth,gNormal,gAlbedoSpec;
-//    glGenFramebuffers(1,&gBuffer);
-//    glBindFramebuffer(GL_FRAMEBUFFER,gBuffer);
-//
-//    glGenTextures(1, &gPositionDepth);
-//    glBindTexture(GL_TEXTURE_2D, gPositionDepth);
-//    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGBA, GL_FLOAT, NULL);
-//    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-//    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-//    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-//    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-//    glFramebufferTexture2D(GL_FRAMEBUFFER,GL_COLOR_ATTACHMENT0,GL_TEXTURE_2D,gPositionDepth,0);
-//
-//
-//    glGenTextures(1, &gNormal);
-//    glBindTexture(GL_TEXTURE_2D, gNormal);
-//    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGB, GL_FLOAT, NULL);
-//    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-//    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-//    glFramebufferTexture2D(GL_FRAMEBUFFER,GL_COLOR_ATTACHMENT1,GL_TEXTURE_2D,gNormal,0);
-//
-//
-//    glGenTextures(1, &gAlbedoSpec);
-//    glBindTexture(GL_TEXTURE_2D, gAlbedoSpec);
-//    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGBA, GL_FLOAT, NULL);
-//    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-//    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-//    glFramebufferTexture2D(GL_FRAMEBUFFER,GL_COLOR_ATTACHMENT2,GL_TEXTURE_2D,gAlbedoSpec,0);
-//
-//    GLuint attachments[3]={GL_COLOR_ATTACHMENT0,GL_COLOR_ATTACHMENT1,GL_COLOR_ATTACHMENT2};
-//    glDrawBuffers(3,attachments);
-//
-//    unsigned int rboDepth;
-//    glGenRenderbuffers(1,&rboDepth);
-//    glBindRenderbuffer(GL_RENDERBUFFER,rboDepth);
-//    glRenderbufferStorage(GL_RENDERBUFFER,GL_DEPTH_COMPONENT,SCR_WIDTH,SCR_HEIGHT);
-//    glFramebufferRenderbuffer(GL_FRAMEBUFFER,GL_DEPTH_ATTACHMENT,GL_RENDERBUFFER,rboDepth);
-//
-//    if(glCheckFramebufferStatus(GL_FRAMEBUFFER)!=GL_FRAMEBUFFER_COMPLETE){
-//        std::cout<<"Framebuffer not complete!"<<std::endl;
-//    }
     glBindFramebuffer(GL_FRAMEBUFFER,0);
-    
-    
-    
-//    unsigned int uniformBlockIndexOur=glGetUniformBlockIndex(ourShader.ID,"Matrices");
-//    unsigned int uniformBlockIndexSkybox=glGetUniformBlockIndex(skyboxShader.ID,"Matrices");
-//    unsigned int uniformBlockIndexPoint=glGetUniformBlockIndex(pointShader.ID,"Matrices");
-//    glUniformBlockBinding(ourShader.ID,uniformBlockIndexOur,0);
-//    glUniformBlockBinding(skyboxShader.ID,uniformBlockIndexSkybox,0);
-//    glUniformBlockBinding(pointShader.ID,uniformBlockIndexPoint,0);
-//    
-//    unsigned int uboMatrices;
-//    glGenBuffers(1,&uboMatrices);
-//    glBindBuffer(GL_UNIFORM_BUFFER,uboMatrices);
-//    glBufferData(GL_UNIFORM_BUFFER,2*sizeof(glm::mat4),NULL,GL_STATIC_DRAW);
-//    glBindBufferRange(GL_UNIFORM_BUFFER,0,uboMatrices,0,2*sizeof(glm::mat4));
-//    pers=glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 1000.0f);
-//    glBufferSubData(GL_UNIFORM_BUFFER,sizeof(glm::mat4),sizeof(glm::mat4),glm::value_ptr(pers));
-//    glBindBuffer(GL_UNIFORM_BUFFER,0);
-    
-
-    
+    glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
 
     glm::mat4 model=glm::mat4(1.0f);
     glm::mat4 view=glm::mat4(1.0f);
@@ -568,6 +548,11 @@ int main()
     float roughness=0.1;
     float ao=1.0;
     
+    glm::vec3 lightPositions[4]={glm::vec3(0.0f,0.0f,20.0f)};
+    glm::vec3 lightColors[4]={glm::vec3(150.0f,150.0f,150.0f)};
+    glm::mat4 matModel=glm::mat4(1.0f);
+    
+
     // render loop
     // -----------
     while (!glfwWindowShouldClose(window))
@@ -581,44 +566,73 @@ int main()
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glClearColor(0.0f, 0.10f, 0.0f, 1.0f);
         
+        for (int i=0; i<4; i++) {
+            glActiveTexture(GL_TEXTURE0+i);
+            glBindTexture(GL_TEXTURE_2D, pbrTextures[i]);
+        }
+        
+        glActiveTexture(GL_TEXTURE6);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, envCubemap);
+        
+        matModel=glm::mat4(1.0f);
         model=glm::mat4(1.0);
         view=camera.GetViewMatrix();
         pers=glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 1000.0f);
         
-        glm::vec3 lightPositions[4]={glm::vec3(10,10,20),glm::vec3(5,5,-3),glm::vec3(4,4,4),glm::vec3(1,1,-3)};
-        glm::vec3 lightColors[4]={glm::vec3(100,0,0),glm::vec3(0,100,0),glm::vec3(0,0,100),glm::vec3(100,100,100)};
-        glm::mat4 matModel=glm::mat4(1.0f);
         pbrShader.use();
         glBindVertexArray(modelVAO);
-        for (int i=0; i<4; i++) {
-            glUniform3fv(glGetUniformLocation(pbrShader.ID,("lightPositions["+std::to_string(i)+"]").c_str()),1,&lightPositions[i][0]);
-            glUniform3fv(glGetUniformLocation(pbrShader.ID,("lightColors["+std::to_string(i)+"]").c_str()),1,&lightColors[i][0]);
-        }
-        
+//        for (int i=0; i<4; i++) {
+//            glUniform3fv(glGetUniformLocation(pbrShader.ID,("lightPositions["+std::to_string(i)+"]").c_str()),1,&lightPositions[i][0]);
+//            glUniform3fv(glGetUniformLocation(pbrShader.ID,("lightColors["+std::to_string(i)+"]").c_str()),1,&lightColors[i][0]);
+//        }
+//
         glUniformMatrix4fv(glGetUniformLocation(pbrShader.ID,"view"),1,GL_FALSE,glm::value_ptr(view));
         glUniformMatrix4fv(glGetUniformLocation(pbrShader.ID,"pers"),1,GL_FALSE,glm::value_ptr(pers));
-        glUniformMatrix4fv(glGetUniformLocation(pbrShader.ID,"matModel"),1,GL_FALSE,glm::value_ptr(matModel));
         
         
-        glUniform3fv(glGetUniformLocation(pbrShader.ID,"albedo"),1,&albedo[0]);
-        glUniform1f(glGetUniformLocation(pbrShader.ID,"ao"),ao);
+        glUniform1i(glGetUniformLocation(pbrShader.ID,"roughnessMap"),0);
+        glUniform1i(glGetUniformLocation(pbrShader.ID,"normalMap"),1);
+        glUniform1i(glGetUniformLocation(pbrShader.ID,"albedoMap"),2);
+        glUniform1i(glGetUniformLocation(pbrShader.ID,"metallicMap"),3);
+        glUniform1i(glGetUniformLocation(pbrShader.ID,"skybox"),6);
+        glUniform3fv(glGetUniformLocation(pbrShader.ID,"camPos"),1,&camera.Position[0]);
+        glUniformMatrix4fv(glGetUniformLocation(pbrShader.ID,"model"),1,GL_FALSE,glm::value_ptr(model));
         
-        float offset=3.1f;
-        roughness=0.0;
-        for (int i=0; i<10; i++) {
-            metallic=0.0f;
-            roughness+=0.1;
-            for (int j=0; j<10; j++) {
-                metallic+=0.1f;
-                model=glm::mat4(1.0);
-                model=glm::translate(model, glm::vec3(0,offset*i,offset*j));
-                glUniformMatrix4fv(glGetUniformLocation(pbrShader.ID,"model"),1,GL_FALSE,glm::value_ptr(model));
-                glUniform1f(glGetUniformLocation(pbrShader.ID,"metallic"),metallic);
-                glUniform1f(glGetUniformLocation(pbrShader.ID,"roughness"),roughness);
-                
-                glDrawArrays(GL_TRIANGLES, 0, vertices.size());
-            }
+//        for (int i=0; i<4; i++) {
+        int i=0;
+        {   glm::vec3 newPos=lightPositions[i]+glm::vec3(sin(glfwGetTime()*5.0f)*5.0f,0.0,0.0);
+            glUniform3fv(glGetUniformLocation(pbrShader.ID,("lightPositions["+std::to_string(i)+"]").c_str()),1,&newPos[0]);
+            glUniform3fv(glGetUniformLocation(pbrShader.ID,("lightColors["+std::to_string(i)+"]").c_str()),1,&lightColors[i][0]);
+            
+            matModel=glm::translate(matModel, glm::vec3(0,0,2.0));
+//            matModel=glm::scale(matModel, glm::vec3(0.5));
+            glUniformMatrix4fv(glGetUniformLocation(pbrShader.ID,"matModel"),1,GL_FALSE,glm::value_ptr(matModel));
+            
+            glDrawArrays(GL_TRIANGLES, 0, vertices.size());
         }
+        
+//        glUniform1i(glGetUniformLocation(pbrShader.ID,"aoMap"),4);
+        
+        
+//        glUniform3fv(glGetUniformLocation(pbrShader.ID,"albedo"),1,&albedo[0]);
+//        glUniform1f(glGetUniformLocation(pbrShader.ID,"ao"),ao);
+//
+//        float offset=3.1f;
+//        roughness=0.0;
+//        for (int i=0; i<10; i++) {
+//            metallic=0.0f;
+//            roughness+=0.1;
+//            for (int j=0; j<10; j++) {
+//                metallic+=0.1f;
+//                model=glm::mat4(1.0);
+//                model=glm::translate(model, glm::vec3(0,offset*i,offset*j));
+//                glUniformMatrix4fv(glGetUniformLocation(pbrShader.ID,"model"),1,GL_FALSE,glm::value_ptr(model));
+//                glUniform1f(glGetUniformLocation(pbrShader.ID,"metallic"),metallic);
+//                glUniform1f(glGetUniformLocation(pbrShader.ID,"roughness"),roughness);
+//
+//                glDrawArrays(GL_TRIANGLES, 0, vertices.size());
+//            }
+//        }
         
         
 //        glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, &indices[0]);
@@ -737,6 +751,31 @@ void mouse_callback(GLFWwindow *window,double xpos,double ypos)
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
     glViewport(0, 0, width, height);
+}
+
+unsigned int generateTex(std::string path,GLuint format){
+    unsigned int textureID;
+    glGenTextures(1,&textureID);
+    int width, height, nrChannels;
+    unsigned char *data = stbi_load(path.c_str(), &width, &height, &nrChannels, 0);
+    
+    if (data)
+    {
+        glBindTexture(GL_TEXTURE_2D, textureID);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+        glGenerateMipmap(GL_TEXTURE_2D);
+    }
+    else
+    {
+        std::cout << "Failed to load texture" << std::endl;
+    }
+    stbi_image_free(data);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE); // note that we set the container wrapping method to GL_CLAMP_TO_EDGE
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    // set texture filtering parameters
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    return textureID;
 }
 
 unsigned int generateTex(std::string path){
