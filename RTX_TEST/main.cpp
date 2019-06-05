@@ -380,35 +380,35 @@ int main()
     glVertexAttribPointer(2,2,GL_FLOAT,GL_FALSE,8*sizeof(float),(void*)(6*sizeof(float)));
     glEnableVertexAttribArray(2);
     
-    glm::mat4 matModels[100];
-    int index=0;
-    float offset=3.1f;
-    for (int i=0; i<10; i++) {
-        for (int j=0; j<10; j++) {
-            glm::mat4 matModel=glm::mat4(1.0);
-            matModel=glm::translate(matModel, glm::vec3(0,1+offset*i,1+offset*j));
-            matModels[index++]=matModel;
-        }
-    }
-    
-    unsigned int instanceVBO;
-    glGenBuffers(1,&instanceVBO);
-    glBindBuffer(GL_ARRAY_BUFFER,instanceVBO);
-    glBufferData(GL_ARRAY_BUFFER,100*sizeof(glm::mat4),&matModels[0],GL_STATIC_DRAW);
-    
-    glEnableVertexAttribArray(3);
-    glVertexAttribPointer(3,4,GL_FLOAT,GL_FALSE,sizeof(glm::mat4),(void*)0);
-    glEnableVertexAttribArray(4);
-    glVertexAttribPointer(4,4,GL_FLOAT,GL_FALSE,sizeof(glm::mat4),(void*)(1*sizeof(glm::vec4)));
-    glEnableVertexAttribArray(5);
-    glVertexAttribPointer(5,4,GL_FLOAT,GL_FALSE,sizeof(glm::mat4),(void*)(2*sizeof(glm::vec4)));
-    glEnableVertexAttribArray(6);
-    glVertexAttribPointer(6,4,GL_FLOAT,GL_FALSE,sizeof(glm::mat4),(void*)(3*sizeof(glm::vec4)));
-    
-    glVertexAttribDivisor(3,1);
-    glVertexAttribDivisor(4,1);
-    glVertexAttribDivisor(5,1);
-    glVertexAttribDivisor(6,1);
+//    glm::mat4 matModels[100];
+//    int index=0;
+//    float offset=3.1f;
+//    for (int i=0; i<10; i++) {
+//        for (int j=0; j<10; j++) {
+//            glm::mat4 matModel=glm::mat4(1.0);
+//            matModel=glm::translate(matModel, glm::vec3(0,1+offset*i,1+offset*j));
+//            matModels[index++]=matModel;
+//        }
+//    }
+//
+//    unsigned int instanceVBO;
+//    glGenBuffers(1,&instanceVBO);
+//    glBindBuffer(GL_ARRAY_BUFFER,instanceVBO);
+//    glBufferData(GL_ARRAY_BUFFER,100*sizeof(glm::mat4),&matModels[0],GL_STATIC_DRAW);
+//
+//    glEnableVertexAttribArray(3);
+//    glVertexAttribPointer(3,4,GL_FLOAT,GL_FALSE,sizeof(glm::mat4),(void*)0);
+//    glEnableVertexAttribArray(4);
+//    glVertexAttribPointer(4,4,GL_FLOAT,GL_FALSE,sizeof(glm::mat4),(void*)(1*sizeof(glm::vec4)));
+//    glEnableVertexAttribArray(5);
+//    glVertexAttribPointer(5,4,GL_FLOAT,GL_FALSE,sizeof(glm::mat4),(void*)(2*sizeof(glm::vec4)));
+//    glEnableVertexAttribArray(6);
+//    glVertexAttribPointer(6,4,GL_FLOAT,GL_FALSE,sizeof(glm::mat4),(void*)(3*sizeof(glm::vec4)));
+//
+//    glVertexAttribDivisor(3,1);
+//    glVertexAttribDivisor(4,1);
+//    glVertexAttribDivisor(5,1);
+//    glVertexAttribDivisor(6,1);
     
     unsigned int EBO;
     glGenBuffers(1,&EBO);
@@ -563,6 +563,10 @@ int main()
     glm::mat4 view=glm::mat4(1.0f);
     glm::mat4 pers=glm::mat4(1.0f);
     
+    glm::vec3 albedo=glm::vec3(1,1,1);
+    float metallic=0.5;
+    float roughness=0.1;
+    float ao=1.0;
     
     // render loop
     // -----------
@@ -579,32 +583,44 @@ int main()
         
         model=glm::mat4(1.0);
         view=camera.GetViewMatrix();
-        
         pers=glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 1000.0f);
-        pbrShader.use();
-        glUniformMatrix4fv(glGetUniformLocation(pbrShader.ID,"model"),1,GL_FALSE,glm::value_ptr(model));
-        glUniformMatrix4fv(glGetUniformLocation(pbrShader.ID,"view"),1,GL_FALSE,glm::value_ptr(view));
-        glUniformMatrix4fv(glGetUniformLocation(pbrShader.ID,"pers"),1,GL_FALSE,glm::value_ptr(pers));
         
-        glm::vec3 albedo=glm::vec3(1,1,1);
-        float metallic=0.5;
-        float roughness=0.1;
-        float ao=1.0;
-        
-        glUniform3fv(glGetUniformLocation(pbrShader.ID,"albedo"),1,&albedo[0]);
-        glUniform1f(glGetUniformLocation(pbrShader.ID,"albedo"),metallic);
-        glUniform1f(glGetUniformLocation(pbrShader.ID,"roughness"),roughness);
-        glUniform1f(glGetUniformLocation(pbrShader.ID,"ao"),ao);
-        
-        glm::vec3 lightPositions[4]={glm::vec3(1,1,2),glm::vec3(1,1,-2),glm::vec3(-1,-1,2),glm::vec3(-1,-1,-2)};
+        glm::vec3 lightPositions[4]={glm::vec3(10,10,20),glm::vec3(5,5,-3),glm::vec3(4,4,4),glm::vec3(1,1,-3)};
         glm::vec3 lightColors[4]={glm::vec3(100,0,0),glm::vec3(0,100,0),glm::vec3(0,0,100),glm::vec3(100,100,100)};
-        
+        glm::mat4 matModel=glm::mat4(1.0f);
+        pbrShader.use();
+        glBindVertexArray(modelVAO);
         for (int i=0; i<4; i++) {
             glUniform3fv(glGetUniformLocation(pbrShader.ID,("lightPositions["+std::to_string(i)+"]").c_str()),1,&lightPositions[i][0]);
             glUniform3fv(glGetUniformLocation(pbrShader.ID,("lightColors["+std::to_string(i)+"]").c_str()),1,&lightColors[i][0]);
         }
-        glBindVertexArray(modelVAO);
-        glDrawArraysInstanced(GL_TRIANGLES, 0, vertices.size(),100);
+        
+        glUniformMatrix4fv(glGetUniformLocation(pbrShader.ID,"view"),1,GL_FALSE,glm::value_ptr(view));
+        glUniformMatrix4fv(glGetUniformLocation(pbrShader.ID,"pers"),1,GL_FALSE,glm::value_ptr(pers));
+        glUniformMatrix4fv(glGetUniformLocation(pbrShader.ID,"matModel"),1,GL_FALSE,glm::value_ptr(matModel));
+        
+        
+        glUniform3fv(glGetUniformLocation(pbrShader.ID,"albedo"),1,&albedo[0]);
+        glUniform1f(glGetUniformLocation(pbrShader.ID,"ao"),ao);
+        
+        float offset=3.1f;
+        roughness=0.0;
+        for (int i=0; i<10; i++) {
+            metallic=0.0f;
+            roughness+=0.1;
+            for (int j=0; j<10; j++) {
+                metallic+=0.1f;
+                model=glm::mat4(1.0);
+                model=glm::translate(model, glm::vec3(0,offset*i,offset*j));
+                glUniformMatrix4fv(glGetUniformLocation(pbrShader.ID,"model"),1,GL_FALSE,glm::value_ptr(model));
+                glUniform1f(glGetUniformLocation(pbrShader.ID,"metallic"),metallic);
+                glUniform1f(glGetUniformLocation(pbrShader.ID,"roughness"),roughness);
+                
+                glDrawArrays(GL_TRIANGLES, 0, vertices.size());
+            }
+        }
+        
+        
 //        glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, &indices[0]);
         
         
