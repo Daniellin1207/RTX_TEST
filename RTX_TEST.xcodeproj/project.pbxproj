@@ -5683,6 +5683,8 @@
 		65BD1909229E193A0043BAF5 /* fragLightShader.frag */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.glsl; path = fragLightShader.frag; sourceTree = "<group>"; };
 		65BD190A229E6C470043BAF5 /* container2_specular.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = container2_specular.png; sourceTree = "<group>"; };
 		65BD190B229E6EF40043BAF5 /* matrix.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = matrix.jpg; sourceTree = "<group>"; };
+		65D89F0522A7EE9B005A1D78 /* vertIrrShader.vert */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.glsl; path = vertIrrShader.vert; sourceTree = "<group>"; };
+		65D89F0622A7EEAA005A1D78 /* fragIrrShader.frag */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.glsl; path = fragIrrShader.frag; sourceTree = "<group>"; };
 		65E3669822A0C0350010A2E1 /* cube.obj */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = cube.obj; sourceTree = "<group>"; };
 		65E3669922A0C03E0010A2E1 /* nanosuit.obj */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = nanosuit.obj; path = nanosuit/nanosuit.obj; sourceTree = "<group>"; };
 		65E3669A22A0C1B30010A2E1 /* vertSkyboxShader.vert */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.glsl; path = vertSkyboxShader.vert; sourceTree = "<group>"; };
@@ -5822,6 +5824,8 @@
 				65B6F35322A74D3E00F5BECC /* fragPbrShader.frag */,
 				65B6F36122A7B6C600F5BECC /* vertEquToCube.vert */,
 				65B6F36222A7B6D600F5BECC /* fragEquToCube.frag */,
+				65D89F0522A7EE9B005A1D78 /* vertIrrShader.vert */,
+				65D89F0622A7EEAA005A1D78 /* fragIrrShader.frag */,
 			);
 			path = RTX_TEST;
 			sourceTree = "<group>";

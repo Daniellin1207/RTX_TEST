@@ -119,6 +119,7 @@ int main()
     Shader gBufferShader("/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/vertGbufferShader.vert","/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/fragGbufferShader.frag");
     Shader pbrShader("/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/vertPbrShader.vert","/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/fragPbrShader.frag");
     Shader equToCubeShader("/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/vertEquToCube.vert","/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/fragEquToCube.frag");
+    Shader irrShader("/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/vertIrrShader.vert","/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/fragIrrShader.frag");
     // set up vertex data (and buffer(s)) and configure vertex attributes
     // ------------------------------------------------------------------
     float lightVertices[] = {
@@ -496,6 +497,18 @@ int main()
     glRenderbufferStorage(GL_RENDERBUFFER,GL_DEPTH_COMPONENT24,512,512);
     glFramebufferRenderbuffer(GL_FRAMEBUFFER,GL_DEPTH_ATTACHMENT,GL_RENDERBUFFER,captureRBO);
     
+    
+    glm::mat4 captureProjection = glm::perspective(glm::radians(90.0f), 1.0f, 0.1f, 10.0f);
+    glm::mat4 captureViews[] =
+    {
+        glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3( 1.0f,  0.0f,  0.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
+        glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(-1.0f,  0.0f,  0.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
+        glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3( 0.0f,  1.0f,  0.0f), glm::vec3(0.0f,  0.0f,  1.0f)),
+        glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3( 0.0f, -1.0f,  0.0f), glm::vec3(0.0f,  0.0f, -1.0f)),
+        glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3( 0.0f,  0.0f,  1.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
+        glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3( 0.0f,  0.0f, -1.0f), glm::vec3(0.0f, -1.0f,  0.0f))
+    };
+    
     unsigned int envCubemap;
     glGenTextures(1, &envCubemap);
     glBindTexture(GL_TEXTURE_CUBE_MAP, envCubemap);
@@ -508,16 +521,6 @@ int main()
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     
-    glm::mat4 captureProjection = glm::perspective(glm::radians(90.0f), 1.0f, 0.1f, 10.0f);
-    glm::mat4 captureViews[] =
-    {
-        glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3( 1.0f,  0.0f,  0.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
-        glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(-1.0f,  0.0f,  0.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
-        glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3( 0.0f,  1.0f,  0.0f), glm::vec3(0.0f,  0.0f,  1.0f)),
-        glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3( 0.0f, -1.0f,  0.0f), glm::vec3(0.0f,  0.0f, -1.0f)),
-        glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3( 0.0f,  0.0f,  1.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
-        glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3( 0.0f,  0.0f, -1.0f), glm::vec3(0.0f, -1.0f,  0.0f))
-    };
     
     glViewport(0, 0, 512, 512);
     glBindFramebuffer(GL_FRAMEBUFFER,captureFBO);
@@ -534,9 +537,46 @@ int main()
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glDrawArrays(GL_TRIANGLES, 0, 36);
     }
+    glBindFramebuffer(GL_FRAMEBUFFER,0);
+
+
+    unsigned int irrMap;
+    glGenTextures(1, &irrMap);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, irrMap);
+    for (int i=0; i<6; i++) {
+        glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X+i, 0, GL_RGB16F, 512, 512, 0, GL_RGB, GL_FLOAT, NULL);
+    }
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+
+//    glViewport(0, 0, 512, 512);
+    glBindFramebuffer(GL_FRAMEBUFFER,captureFBO);
+    glBindRenderbuffer(GL_RENDERBUFFER,captureRBO);
+    glRenderbufferStorage(GL_RENDERBUFFER,GL_DEPTH_COMPONENT24,32,32);
+
+    irrShader.use();
+    glActiveTexture(GL_TEXTURE6);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, envCubemap);
+    glUniformMatrix4fv(glGetUniformLocation(irrShader.ID,"pers"),1,GL_FALSE,glm::value_ptr(captureProjection));
+    glUniform1i(glGetUniformLocation(irrShader.ID,"skybox"),6);
+    glBindVertexArray(lightVAO);
+    for (int i=0; i<6; i++) {
+        glUniformMatrix4fv(glGetUniformLocation(irrShader.ID,"view"),1,GL_FALSE,glm::value_ptr(captureViews[i]));
+        glFramebufferTexture2D(GL_FRAMEBUFFER,GL_COLOR_ATTACHMENT0,GL_TEXTURE_CUBE_MAP_POSITIVE_X+i,irrMap,0);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glDrawArrays(GL_TRIANGLES, 0, 36);
+    }
+    glBindFramebuffer(GL_FRAMEBUFFER,0);
+    
+    
     
 
-    glBindFramebuffer(GL_FRAMEBUFFER,0);
+    
+    
     glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
 
     glm::mat4 model=glm::mat4(1.0f);
@@ -552,7 +592,7 @@ int main()
     glm::vec3 lightColors[4]={glm::vec3(150.0f,150.0f,150.0f)};
     glm::mat4 matModel=glm::mat4(1.0f);
     
-
+    glViewport(0, 0, SCR_WIDTH*2, SCR_HEIGHT*2);
     // render loop
     // -----------
     while (!glfwWindowShouldClose(window))
@@ -562,7 +602,8 @@ int main()
         lastFrame=currentFrame;
         processInput(window);
         
-
+        glEnable(GL_DEPTH_TEST);
+        glDepthFunc(GL_LEQUAL);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glClearColor(0.0f, 0.10f, 0.0f, 1.0f);
         
@@ -572,7 +613,7 @@ int main()
         }
         
         glActiveTexture(GL_TEXTURE6);
-        glBindTexture(GL_TEXTURE_CUBE_MAP, envCubemap);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, irrMap);
         
         matModel=glm::mat4(1.0f);
         model=glm::mat4(1.0);
@@ -600,7 +641,8 @@ int main()
         
 //        for (int i=0; i<4; i++) {
         int i=0;
-        {   glm::vec3 newPos=lightPositions[i]+glm::vec3(sin(glfwGetTime()*5.0f)*5.0f,0.0,0.0);
+        {
+            glm::vec3 newPos=lightPositions[i]+glm::vec3(sin(glfwGetTime()*5.0f)*5.0f,0.0,0.0);
             glUniform3fv(glGetUniformLocation(pbrShader.ID,("lightPositions["+std::to_string(i)+"]").c_str()),1,&newPos[0]);
             glUniform3fv(glGetUniformLocation(pbrShader.ID,("lightColors["+std::to_string(i)+"]").c_str()),1,&lightColors[i][0]);
             
@@ -611,6 +653,19 @@ int main()
             glDrawArrays(GL_TRIANGLES, 0, vertices.size());
         }
         
+        glActiveTexture(GL_TEXTURE6);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, envCubemap);
+        easyShader.use();
+        model=glm::mat4(1.0f);
+        model=glm::scale(model, glm::vec3(10.0));
+        view=glm::mat4(glm::mat3(camera.GetViewMatrix()));
+        pers=glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 1000.0f);
+        glUniform1i(glGetUniformLocation(easyShader.ID,"skybox"),6);
+        glUniformMatrix4fv(glGetUniformLocation(easyShader.ID,"model"),1,GL_FALSE,glm::value_ptr(model));
+        glUniformMatrix4fv(glGetUniformLocation(easyShader.ID,"view"),1,GL_FALSE,glm::value_ptr(view));
+        glUniformMatrix4fv(glGetUniformLocation(easyShader.ID,"pers"),1,GL_FALSE,glm::value_ptr(pers));
+        glBindVertexArray(lightVAO);
+        glDrawArrays(GL_TRIANGLES, 0, 36);
 //        glUniform1i(glGetUniformLocation(pbrShader.ID,"aoMap"),4);
         
         

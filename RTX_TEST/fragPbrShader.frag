@@ -81,7 +81,23 @@ void main(){
 //    vec3 color=ambient+Lo;
 //    color=color/(color+vec3(1.0f));
 //    color=pow(color,vec3(1.0/2.2));
-    vec3 color=texture(skybox,WorldPos).rgb;
+//    vec3 normal=getNormalFromMap();
+//    vec3 irr=vec3(0.0);
+//    vec3 up=vec3(0,1,0);
+//    vec3 right=cross(up,normal);
+//    vec3 N=cross(normal,right);
+//    float sampleDelta=0.25;
+//    float nrSamples=0.0;
+//    for (float phi=0.0; phi< 2*PI; phi+=sampleDelta) {
+//        for (float theta=0.0; theta<0.5*PI; theta+=sampleDelta) {
+//            vec3 tangentSample=vec3(sin(theta)*cos(phi),sin(theta)*sin(phi),cos(theta));
+//            vec3 sampleVec=(tangentSample.x*right+tangentSample.y*up+tangentSample.z*normal);
+//            irr+=texture(skybox,sampleVec).rgb*cos(theta)*sin(theta);
+//            nrSamples++;
+//        }
+//    }
+//    irr=PI*irr*(1.0/float(nrSamples));
+    vec3 color=texture(skybox,normalize(WorldPos)).rgb;
     FragColor=vec4(color,1.0f);
 }
 
