@@ -116,6 +116,7 @@ int main()
 //    Shader blurShader("/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/vertBlurShader.vert","/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/fragBlurShader.frag");
     Shader easyShader("/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/vertEasyShader.vert","/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/fragEasyShader.frag");
     Shader gBufferShader("/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/vertGbufferShader.vert","/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/fragGbufferShader.frag");
+    Shader pbrShader("/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/vertPbrShader.vert","/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/fragPbrShader.frag");
     // set up vertex data (and buffer(s)) and configure vertex attributes
     // ------------------------------------------------------------------
     float lightVertices[] = {
@@ -229,7 +230,7 @@ int main()
     
     std::vector<Vertex> vertices;
     std::vector<unsigned int>indices;
-    const std::string path = "/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/Models/nanosuit/nanosuit.obj";
+    const std::string path = "/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/Models/sphere.obj";
     tinyobj::attrib_t attrib;
     std::vector<tinyobj::shape_t> shapes;
     std::vector<tinyobj::material_t> materials;
@@ -257,6 +258,7 @@ int main()
                 attrib.normals[3*index.normal_index+2],
             };
             vertex.tex={
+//                0.0,0.0
                 attrib.texcoords[2*index.texcoord_index+0],
                 attrib.texcoords[2*index.texcoord_index+1],
             };
@@ -364,11 +366,11 @@ int main()
 //    glVertexAttribDivisor(5,1);
 //    glVertexAttribDivisor(6,1);
 
-    unsigned int VAO,VBO;
-    glGenVertexArrays(1,&VAO);
-    glGenBuffers(1,&VBO);
-    glBindVertexArray(VAO);
-    glBindBuffer(GL_ARRAY_BUFFER,VBO);
+    unsigned int modelVAO,modelVBO;
+    glGenVertexArrays(1,&modelVAO);
+    glGenBuffers(1,&modelVBO);
+    glBindVertexArray(modelVAO);
+    glBindBuffer(GL_ARRAY_BUFFER,modelVBO);
     glBufferData(GL_ARRAY_BUFFER,sizeof(Vertex)*vertices.size(),&vertices[0],GL_STATIC_DRAW);
     
     glVertexAttribPointer(0,3,GL_FLOAT,GL_FALSE,8*sizeof(float),(void*)0);
@@ -377,11 +379,43 @@ int main()
     glEnableVertexAttribArray(1);
     glVertexAttribPointer(2,2,GL_FLOAT,GL_FALSE,8*sizeof(float),(void*)(6*sizeof(float)));
     glEnableVertexAttribArray(2);
+    
+    glm::mat4 matModels[100];
+    int index=0;
+    float offset=3.1f;
+    for (int i=0; i<10; i++) {
+        for (int j=0; j<10; j++) {
+            glm::mat4 matModel=glm::mat4(1.0);
+            matModel=glm::translate(matModel, glm::vec3(0,1+offset*i,1+offset*j));
+            matModels[index++]=matModel;
+        }
+    }
+    
+    unsigned int instanceVBO;
+    glGenBuffers(1,&instanceVBO);
+    glBindBuffer(GL_ARRAY_BUFFER,instanceVBO);
+    glBufferData(GL_ARRAY_BUFFER,100*sizeof(glm::mat4),&matModels[0],GL_STATIC_DRAW);
+    
+    glEnableVertexAttribArray(3);
+    glVertexAttribPointer(3,4,GL_FLOAT,GL_FALSE,sizeof(glm::mat4),(void*)0);
+    glEnableVertexAttribArray(4);
+    glVertexAttribPointer(4,4,GL_FLOAT,GL_FALSE,sizeof(glm::mat4),(void*)(1*sizeof(glm::vec4)));
+    glEnableVertexAttribArray(5);
+    glVertexAttribPointer(5,4,GL_FLOAT,GL_FALSE,sizeof(glm::mat4),(void*)(2*sizeof(glm::vec4)));
+    glEnableVertexAttribArray(6);
+    glVertexAttribPointer(6,4,GL_FLOAT,GL_FALSE,sizeof(glm::mat4),(void*)(3*sizeof(glm::vec4)));
+    
+    glVertexAttribDivisor(3,1);
+    glVertexAttribDivisor(4,1);
+    glVertexAttribDivisor(5,1);
+    glVertexAttribDivisor(6,1);
+    
     unsigned int EBO;
     glGenBuffers(1,&EBO);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size()*sizeof(unsigned int), &indices[0], GL_STATIC_DRAW);
     
+    glBindVertexArray(0);
     
 //    glm::vec2 translations[100];
 //    int index=0;
@@ -460,48 +494,48 @@ int main()
     
     
     
-    unsigned int gBuffer;
-    unsigned int gPositionDepth,gNormal,gAlbedoSpec;
-    glGenFramebuffers(1,&gBuffer);
-    glBindFramebuffer(GL_FRAMEBUFFER,gBuffer);
-    
-    glGenTextures(1, &gPositionDepth);
-    glBindTexture(GL_TEXTURE_2D, gPositionDepth);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGBA, GL_FLOAT, NULL);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glFramebufferTexture2D(GL_FRAMEBUFFER,GL_COLOR_ATTACHMENT0,GL_TEXTURE_2D,gPositionDepth,0);
-    
-    
-    glGenTextures(1, &gNormal);
-    glBindTexture(GL_TEXTURE_2D, gNormal);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGB, GL_FLOAT, NULL);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glFramebufferTexture2D(GL_FRAMEBUFFER,GL_COLOR_ATTACHMENT1,GL_TEXTURE_2D,gNormal,0);
-    
-    
-    glGenTextures(1, &gAlbedoSpec);
-    glBindTexture(GL_TEXTURE_2D, gAlbedoSpec);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGBA, GL_FLOAT, NULL);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glFramebufferTexture2D(GL_FRAMEBUFFER,GL_COLOR_ATTACHMENT2,GL_TEXTURE_2D,gAlbedoSpec,0);
-    
-    GLuint attachments[3]={GL_COLOR_ATTACHMENT0,GL_COLOR_ATTACHMENT1,GL_COLOR_ATTACHMENT2};
-    glDrawBuffers(3,attachments);
-    
-    unsigned int rboDepth;
-    glGenRenderbuffers(1,&rboDepth);
-    glBindRenderbuffer(GL_RENDERBUFFER,rboDepth);
-    glRenderbufferStorage(GL_RENDERBUFFER,GL_DEPTH_COMPONENT,SCR_WIDTH,SCR_HEIGHT);
-    glFramebufferRenderbuffer(GL_FRAMEBUFFER,GL_DEPTH_ATTACHMENT,GL_RENDERBUFFER,rboDepth);
-    
-    if(glCheckFramebufferStatus(GL_FRAMEBUFFER)!=GL_FRAMEBUFFER_COMPLETE){
-        std::cout<<"Framebuffer not complete!"<<std::endl;
-    }
+//    unsigned int gBuffer;
+//    unsigned int gPositionDepth,gNormal,gAlbedoSpec;
+//    glGenFramebuffers(1,&gBuffer);
+//    glBindFramebuffer(GL_FRAMEBUFFER,gBuffer);
+//
+//    glGenTextures(1, &gPositionDepth);
+//    glBindTexture(GL_TEXTURE_2D, gPositionDepth);
+//    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGBA, GL_FLOAT, NULL);
+//    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+//    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+//    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+//    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+//    glFramebufferTexture2D(GL_FRAMEBUFFER,GL_COLOR_ATTACHMENT0,GL_TEXTURE_2D,gPositionDepth,0);
+//
+//
+//    glGenTextures(1, &gNormal);
+//    glBindTexture(GL_TEXTURE_2D, gNormal);
+//    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGB, GL_FLOAT, NULL);
+//    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+//    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+//    glFramebufferTexture2D(GL_FRAMEBUFFER,GL_COLOR_ATTACHMENT1,GL_TEXTURE_2D,gNormal,0);
+//
+//
+//    glGenTextures(1, &gAlbedoSpec);
+//    glBindTexture(GL_TEXTURE_2D, gAlbedoSpec);
+//    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGBA, GL_FLOAT, NULL);
+//    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+//    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+//    glFramebufferTexture2D(GL_FRAMEBUFFER,GL_COLOR_ATTACHMENT2,GL_TEXTURE_2D,gAlbedoSpec,0);
+//
+//    GLuint attachments[3]={GL_COLOR_ATTACHMENT0,GL_COLOR_ATTACHMENT1,GL_COLOR_ATTACHMENT2};
+//    glDrawBuffers(3,attachments);
+//
+//    unsigned int rboDepth;
+//    glGenRenderbuffers(1,&rboDepth);
+//    glBindRenderbuffer(GL_RENDERBUFFER,rboDepth);
+//    glRenderbufferStorage(GL_RENDERBUFFER,GL_DEPTH_COMPONENT,SCR_WIDTH,SCR_HEIGHT);
+//    glFramebufferRenderbuffer(GL_FRAMEBUFFER,GL_DEPTH_ATTACHMENT,GL_RENDERBUFFER,rboDepth);
+//
+//    if(glCheckFramebufferStatus(GL_FRAMEBUFFER)!=GL_FRAMEBUFFER_COMPLETE){
+//        std::cout<<"Framebuffer not complete!"<<std::endl;
+//    }
     glBindFramebuffer(GL_FRAMEBUFFER,0);
     
     
@@ -539,65 +573,98 @@ int main()
         lastFrame=currentFrame;
         processInput(window);
         
-        
-        
-        glBindFramebuffer(GL_FRAMEBUFFER,gBuffer);
+
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        glClearColor(1.0f, 0.10f, 0.0f, 1.0f);
-        
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, texture[0]);
-        glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_2D, texture[1]);
-        glActiveTexture(GL_TEXTURE2);
-        glBindTexture(GL_TEXTURE_2D, texture[2]);
+        glClearColor(0.0f, 0.10f, 0.0f, 1.0f);
         
         model=glm::mat4(1.0);
         view=camera.GetViewMatrix();
+        
         pers=glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 1000.0f);
-        gBufferShader.use();
-        glUniformMatrix4fv(glGetUniformLocation(gBufferShader.ID,"model"),1,GL_FALSE,glm::value_ptr(model));
-        glUniformMatrix4fv(glGetUniformLocation(gBufferShader.ID,"view"),1,GL_FALSE,glm::value_ptr(view));
-        glUniformMatrix4fv(glGetUniformLocation(gBufferShader.ID,"pers"),1,GL_FALSE,glm::value_ptr(pers));
+        pbrShader.use();
+        glUniformMatrix4fv(glGetUniformLocation(pbrShader.ID,"model"),1,GL_FALSE,glm::value_ptr(model));
+        glUniformMatrix4fv(glGetUniformLocation(pbrShader.ID,"view"),1,GL_FALSE,glm::value_ptr(view));
+        glUniformMatrix4fv(glGetUniformLocation(pbrShader.ID,"pers"),1,GL_FALSE,glm::value_ptr(pers));
         
-        glUniform1i(glGetUniformLocation(gBufferShader.ID,"diffTex"),0);
-        glUniform1i(glGetUniformLocation(gBufferShader.ID,"specTex"),1);
+        glm::vec3 albedo=glm::vec3(1,1,1);
+        float metallic=0.5;
+        float roughness=0.1;
+        float ao=1.0;
         
-        glBindVertexArray(lightVAO);
-        glDrawArrays(GL_TRIANGLES, 0, 36);
+        glUniform3fv(glGetUniformLocation(pbrShader.ID,"albedo"),1,&albedo[0]);
+        glUniform1f(glGetUniformLocation(pbrShader.ID,"albedo"),metallic);
+        glUniform1f(glGetUniformLocation(pbrShader.ID,"roughness"),roughness);
+        glUniform1f(glGetUniformLocation(pbrShader.ID,"ao"),ao);
+        
+        glm::vec3 lightPositions[4]={glm::vec3(1,1,2),glm::vec3(1,1,-2),glm::vec3(-1,-1,2),glm::vec3(-1,-1,-2)};
+        glm::vec3 lightColors[4]={glm::vec3(100,0,0),glm::vec3(0,100,0),glm::vec3(0,0,100),glm::vec3(100,100,100)};
+        
+        for (int i=0; i<4; i++) {
+            glUniform3fv(glGetUniformLocation(pbrShader.ID,("lightPositions["+std::to_string(i)+"]").c_str()),1,&lightPositions[i][0]);
+            glUniform3fv(glGetUniformLocation(pbrShader.ID,("lightColors["+std::to_string(i)+"]").c_str()),1,&lightColors[i][0]);
+        }
+        glBindVertexArray(modelVAO);
+        glDrawArraysInstanced(GL_TRIANGLES, 0, vertices.size(),100);
+//        glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, &indices[0]);
         
         
-        glBindFramebuffer(GL_READ_FRAMEBUFFER,gBuffer);
-        glBindFramebuffer(GL_DRAW_FRAMEBUFFER,0);
-        glBlitFramebuffer(0,0,SCR_WIDTH,SCR_HEIGHT,0,0,SCR_WIDTH,SCR_HEIGHT,GL_DEPTH_BUFFER_BIT,GL_NEAREST);
-        
-        
-        glBindFramebuffer(GL_FRAMEBUFFER,0);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        glClearColor(1.0f, 0.10f, 0.0f, 1.0f);
-        
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, gPosition);
-        glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_2D, gNormal);
-        glActiveTexture(GL_TEXTURE2);
-        glBindTexture(GL_TEXTURE_2D, gAlbedoSpec);
-        
-        planeShader.use();
-        glUniform1i(glGetUniformLocation(planeShader.ID,"gPosition"),0);
-        glUniform1i(glGetUniformLocation(planeShader.ID,"gNormal"),1);
-        glUniform1i(glGetUniformLocation(planeShader.ID,"gAlbedoSpec"),2);
-        glBindVertexArray(planeVAO);
-        glDrawArrays(GL_TRIANGLES, 0, 6);
-        
-        easyShader.use();
-        model=glm::translate(model, glm::vec3(4,0,0));
-        glUniformMatrix4fv(glGetUniformLocation(easyShader.ID,"model"),1,GL_FALSE,glm::value_ptr(model));
-        glUniformMatrix4fv(glGetUniformLocation(easyShader.ID,"view"),1,GL_FALSE,glm::value_ptr(view));
-        glUniformMatrix4fv(glGetUniformLocation(easyShader.ID,"pers"),1,GL_FALSE,glm::value_ptr(pers));
-        
-        glBindVertexArray(lightVAO);
-        glDrawArrays(GL_TRIANGLES, 0, 36);
+//        glBindFramebuffer(GL_FRAMEBUFFER,gBuffer);
+//        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+//        glClearColor(1.0f, 0.10f, 0.0f, 1.0f);
+//
+//        glActiveTexture(GL_TEXTURE0);
+//        glBindTexture(GL_TEXTURE_2D, texture[0]);
+//        glActiveTexture(GL_TEXTURE1);
+//        glBindTexture(GL_TEXTURE_2D, texture[1]);
+//        glActiveTexture(GL_TEXTURE2);
+//        glBindTexture(GL_TEXTURE_2D, texture[2]);
+//
+//        model=glm::mat4(1.0);
+//        view=camera.GetViewMatrix();
+//        pers=glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 1000.0f);
+//        gBufferShader.use();
+//        glUniformMatrix4fv(glGetUniformLocation(gBufferShader.ID,"model"),1,GL_FALSE,glm::value_ptr(model));
+//        glUniformMatrix4fv(glGetUniformLocation(gBufferShader.ID,"view"),1,GL_FALSE,glm::value_ptr(view));
+//        glUniformMatrix4fv(glGetUniformLocation(gBufferShader.ID,"pers"),1,GL_FALSE,glm::value_ptr(pers));
+//
+//        glUniform1i(glGetUniformLocation(gBufferShader.ID,"diffTex"),0);
+//        glUniform1i(glGetUniformLocation(gBufferShader.ID,"specTex"),1);
+//
+//        glBindVertexArray(lightVAO);
+//        glDrawArrays(GL_TRIANGLES, 0, 36);
+//
+//
+//        glBindFramebuffer(GL_READ_FRAMEBUFFER,gBuffer);
+//        glBindFramebuffer(GL_DRAW_FRAMEBUFFER,0);
+//        glBlitFramebuffer(0,0,SCR_WIDTH,SCR_HEIGHT,0,0,SCR_WIDTH,SCR_HEIGHT,GL_DEPTH_BUFFER_BIT,GL_NEAREST);
+//
+//
+//        glBindFramebuffer(GL_FRAMEBUFFER,0);
+//        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+//        glClearColor(1.0f, 0.10f, 0.0f, 1.0f);
+//
+//        glActiveTexture(GL_TEXTURE0);
+//        glBindTexture(GL_TEXTURE_2D, gPositionDepth);
+//        glActiveTexture(GL_TEXTURE1);
+//        glBindTexture(GL_TEXTURE_2D, gNormal);
+//        glActiveTexture(GL_TEXTURE2);
+//        glBindTexture(GL_TEXTURE_2D, gAlbedoSpec);
+//
+//        planeShader.use();
+//        glUniform1i(glGetUniformLocation(planeShader.ID,"gPosition"),0);
+//        glUniform1i(glGetUniformLocation(planeShader.ID,"gNormal"),1);
+//        glUniform1i(glGetUniformLocation(planeShader.ID,"gAlbedoSpec"),2);
+//        glBindVertexArray(planeVAO);
+//        glDrawArrays(GL_TRIANGLES, 0, 6);
+//
+//        easyShader.use();
+//        model=glm::translate(model, glm::vec3(4,0,0));
+//        glUniformMatrix4fv(glGetUniformLocation(easyShader.ID,"model"),1,GL_FALSE,glm::value_ptr(model));
+//        glUniformMatrix4fv(glGetUniformLocation(easyShader.ID,"view"),1,GL_FALSE,glm::value_ptr(view));
+//        glUniformMatrix4fv(glGetUniformLocation(easyShader.ID,"pers"),1,GL_FALSE,glm::value_ptr(pers));
+//
+//        glBindVertexArray(lightVAO);
+//        glDrawArrays(GL_TRIANGLES, 0, 36);
         
         
         glfwSwapBuffers(window);

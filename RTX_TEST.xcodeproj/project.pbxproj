@@ -49,6 +49,9 @@
 		65B6F34E22A5F8B200F5BECC /* vertGbufferShader */ = {isa = PBXFileReference; lastKnownFileType = text; path = vertGbufferShader; sourceTree = "<group>"; };
 		65B6F34F22A5F8C200F5BECC /* vertGbufferShader.vert */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.glsl; path = vertGbufferShader.vert; sourceTree = "<group>"; };
 		65B6F35022A5F8D200F5BECC /* fragGbufferShader.frag */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.glsl; path = fragGbufferShader.frag; sourceTree = "<group>"; };
+		65B6F35122A74C4700F5BECC /* sphere.obj */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = sphere.obj; sourceTree = "<group>"; };
+		65B6F35222A74D2C00F5BECC /* vertPbrShader.vert */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.glsl; path = vertPbrShader.vert; sourceTree = "<group>"; };
+		65B6F35322A74D3E00F5BECC /* fragPbrShader.frag */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.glsl; path = fragPbrShader.frag; sourceTree = "<group>"; };
 		65BB806E229A7DF50093B7EC /* RTX_TEST */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = RTX_TEST; sourceTree = BUILT_PRODUCTS_DIR; };
 		65BB8071229A7DF50093B7EC /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		65BB8079229A7E890093B7EC /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = System/Library/Frameworks/OpenGL.framework; sourceTree = SDKROOT; };
@@ -5710,6 +5713,7 @@
 		6501CF24229F6ED20066F8CF /* Models */ = {
 			isa = PBXGroup;
 			children = (
+				65B6F35122A74C4700F5BECC /* sphere.obj */,
 				65E3669922A0C03E0010A2E1 /* nanosuit.obj */,
 				65E3669822A0C0350010A2E1 /* cube.obj */,
 			);
@@ -5776,6 +5780,8 @@
 				65B6F34E22A5F8B200F5BECC /* vertGbufferShader */,
 				65B6F34F22A5F8C200F5BECC /* vertGbufferShader.vert */,
 				65B6F35022A5F8D200F5BECC /* fragGbufferShader.frag */,
+				65B6F35222A74D2C00F5BECC /* vertPbrShader.vert */,
+				65B6F35322A74D3E00F5BECC /* fragPbrShader.frag */,
 			);
 			path = RTX_TEST;
 			sourceTree = "<group>";
