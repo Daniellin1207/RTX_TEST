@@ -120,6 +120,8 @@ int main()
     Shader pbrShader("/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/vertPbrShader.vert","/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/fragPbrShader.frag");
     Shader equToCubeShader("/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/vertEquToCube.vert","/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/fragEquToCube.frag");
     Shader irrShader("/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/vertIrrShader.vert","/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/fragIrrShader.frag");
+    Shader prefilterShader("/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/vertPrefilterShader.vert","/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/fragPrefilterShader.frag");
+    Shader brdfShader("/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/vertBrdfShader.vert","/Users/daniel/CodeManager/RTX_TEST/RTX_TEST/fragBrdfShader.frag");
     // set up vertex data (and buffer(s)) and configure vertex attributes
     // ------------------------------------------------------------------
     float lightVertices[] = {
@@ -320,8 +322,6 @@ int main()
     planeVAO=generateVAO(planeVertices, sizeof(planeVertices), 3, 2);
     unsigned int skyboxVAO;
     skyboxVAO=generateVAO(skyboxVertices, sizeof(skyboxVertices), 3);
-//    unsigned int geoVAO;
-//    geoVAO=generateVAO(points, 36, 2, 3);
     unsigned int lightVAO;
     lightVAO=generateVAO(lightVertices,sizeof(lightVertices),3,3,2);
 //    unsigned int geoVAO,geoVBO;
@@ -544,7 +544,7 @@ int main()
     glGenTextures(1, &irrMap);
     glBindTexture(GL_TEXTURE_CUBE_MAP, irrMap);
     for (int i=0; i<6; i++) {
-        glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X+i, 0, GL_RGB16F, 512, 512, 0, GL_RGB, GL_FLOAT, NULL);
+        glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X+i, 0, GL_RGB16F, 32 , 32, 0, GL_RGB, GL_FLOAT, NULL);
     }
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -572,6 +572,77 @@ int main()
     }
     glBindFramebuffer(GL_FRAMEBUFFER,0);
     
+    unsigned int prefilterMap;
+    glGenTextures(1, &prefilterMap);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, prefilterMap);
+    for (unsigned int i = 0; i < 6; ++i)
+    {
+        glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB16F, 128, 128, 0, GL_RGB, GL_FLOAT, NULL);
+    }
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR); // be sure to set minifcation filter to mip_linear
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    // generate mipmaps for the cubemap so OpenGL automatically allocates the required memory.
+    glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
+    
+    prefilterShader.use();
+    glActiveTexture(GL_TEXTURE6);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, envCubemap);
+    glUniform1i(glGetUniformLocation(prefilterShader.ID,"environmentMap"),6);
+    glUniformMatrix4fv(glGetUniformLocation(prefilterShader.ID,"pers"),1,GL_FALSE,glm::value_ptr(captureProjection));
+    
+    glBindFramebuffer(GL_FRAMEBUFFER,captureFBO);
+    unsigned int maxMipLevels = 5;
+    for (unsigned int mip = 0; mip < maxMipLevels; ++mip)
+    {
+        // reisze framebuffer according to mip-level size.
+        unsigned int mipWidth = 128 * std::pow(0.5, mip);
+        unsigned int mipHeight = 128 * std::pow(0.5, mip);
+        glBindRenderbuffer(GL_RENDERBUFFER, captureRBO);
+        glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, mipWidth, mipHeight);
+        glViewport(0, 0, mipWidth, mipHeight);
+        
+        float roughness = (float)mip / (float)(maxMipLevels - 1);
+        glUniform1f(glGetUniformLocation(prefilterShader.ID,"roughness"),roughness);
+        for (unsigned int i = 0; i < 6; ++i)
+        {
+            glUniformMatrix4fv(glGetUniformLocation(prefilterShader.ID,"view"),1,GL_FALSE,glm::value_ptr(captureViews[i]));
+            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, prefilterMap, mip);
+            
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+            glDrawArrays(GL_TRIANGLES, 0, 36);
+        }
+    }
+    
+    glBindFramebuffer(GL_FRAMEBUFFER,0);
+
+    unsigned int brdfLUTTexture;
+    glGenTextures(1, &brdfLUTTexture);
+    
+    // pre-allocate enough memory for the LUT texture.
+    glBindTexture(GL_TEXTURE_2D, brdfLUTTexture);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RG16F, 512, 512, 0, GL_RG, GL_FLOAT, 0);
+    // be sure to set wrapping mode to GL_CLAMP_TO_EDGE
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    
+    // then re-configure capture framebuffer object and render screen-space quad with BRDF shader.
+    glBindFramebuffer(GL_FRAMEBUFFER, captureFBO);
+    glBindRenderbuffer(GL_RENDERBUFFER, captureRBO);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, 512, 512);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, brdfLUTTexture, 0);
+    
+    glViewport(0, 0, 512, 512);
+    brdfShader.use();
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glBindVertexArray(planeVAO);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
     
     
 
@@ -607,65 +678,85 @@ int main()
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glClearColor(0.0f, 0.10f, 0.0f, 1.0f);
         
-        for (int i=0; i<4; i++) {
-            glActiveTexture(GL_TEXTURE0+i);
-            glBindTexture(GL_TEXTURE_2D, pbrTextures[i]);
-        }
-        
+        planeShader.use();
         glActiveTexture(GL_TEXTURE6);
-        glBindTexture(GL_TEXTURE_CUBE_MAP, irrMap);
+        glBindTexture(GL_TEXTURE_2D, brdfLUTTexture);
+        glUniform1i(glGetUniformLocation(planeShader.ID,"brdf"),6);
+        glBindVertexArray(planeVAO);
+        glDrawArrays(GL_TRIANGLES, 0,6);
         
-        matModel=glm::mat4(1.0f);
-        model=glm::mat4(1.0);
-        view=camera.GetViewMatrix();
-        pers=glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 1000.0f);
-        
-        pbrShader.use();
-        glBindVertexArray(modelVAO);
 //        for (int i=0; i<4; i++) {
-//            glUniform3fv(glGetUniformLocation(pbrShader.ID,("lightPositions["+std::to_string(i)+"]").c_str()),1,&lightPositions[i][0]);
-//            glUniform3fv(glGetUniformLocation(pbrShader.ID,("lightColors["+std::to_string(i)+"]").c_str()),1,&lightColors[i][0]);
+//            glActiveTexture(GL_TEXTURE0+i);
+//            glBindTexture(GL_TEXTURE_2D, pbrTextures[i]);
 //        }
 //
-        glUniformMatrix4fv(glGetUniformLocation(pbrShader.ID,"view"),1,GL_FALSE,glm::value_ptr(view));
-        glUniformMatrix4fv(glGetUniformLocation(pbrShader.ID,"pers"),1,GL_FALSE,glm::value_ptr(pers));
+//        glActiveTexture(GL_TEXTURE6);
+//        glBindTexture(GL_TEXTURE_CUBE_MAP, envCubemap);
+//
+//        matModel=glm::mat4(1.0f);
+//        model=glm::mat4(1.0);
+//        view=camera.GetViewMatrix();
+//        pers=glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 1000.0f);
+//
+//        pbrShader.use();
+//        glBindVertexArray(modelVAO);
+////        for (int i=0; i<4; i++) {
+////            glUniform3fv(glGetUniformLocation(pbrShader.ID,("lightPositions["+std::to_string(i)+"]").c_str()),1,&lightPositions[i][0]);
+////            glUniform3fv(glGetUniformLocation(pbrShader.ID,("lightColors["+std::to_string(i)+"]").c_str()),1,&lightColors[i][0]);
+////        }
+////
+//        glUniformMatrix4fv(glGetUniformLocation(pbrShader.ID,"view"),1,GL_FALSE,glm::value_ptr(view));
+//        glUniformMatrix4fv(glGetUniformLocation(pbrShader.ID,"pers"),1,GL_FALSE,glm::value_ptr(pers));
+//
+//
+//        glUniform1i(glGetUniformLocation(pbrShader.ID,"roughnessMap"),0);
+//        glUniform1i(glGetUniformLocation(pbrShader.ID,"normalMap"),1);
+//        glUniform1i(glGetUniformLocation(pbrShader.ID,"albedoMap"),2);
+//        glUniform1i(glGetUniformLocation(pbrShader.ID,"metallicMap"),3);
+//        glUniform1i(glGetUniformLocation(pbrShader.ID,"skybox"),6);
+//        glUniform3fv(glGetUniformLocation(pbrShader.ID,"camPos"),1,&camera.Position[0]);
+//        glUniformMatrix4fv(glGetUniformLocation(pbrShader.ID,"model"),1,GL_FALSE,glm::value_ptr(model));
+//
+////        for (int i=0; i<4; i++) {
+//        int i=0;
+//        {
+//            glm::vec3 newPos=lightPositions[i]+glm::vec3(sin(glfwGetTime()*5.0f)*5.0f,0.0,0.0);
+//            glUniform3fv(glGetUniformLocation(pbrShader.ID,("lightPositions["+std::to_string(i)+"]").c_str()),1,&newPos[0]);
+//            glUniform3fv(glGetUniformLocation(pbrShader.ID,("lightColors["+std::to_string(i)+"]").c_str()),1,&lightColors[i][0]);
+//
+//            matModel=glm::translate(matModel, glm::vec3(0,0,2.0));
+////            matModel=glm::scale(matModel, glm::vec3(0.5));
+//            glUniformMatrix4fv(glGetUniformLocation(pbrShader.ID,"matModel"),1,GL_FALSE,glm::value_ptr(matModel));
+//
+//            glDrawArrays(GL_TRIANGLES, 0, vertices.size());
+//        }
+//
+//        glActiveTexture(GL_TEXTURE6);
+//        glBindTexture(GL_TEXTURE_CUBE_MAP, envCubemap);
+//        easyShader.use();
+//        model=glm::mat4(1.0f);
+//        model=glm::scale(model, glm::vec3(10.0));
+//        view=glm::mat4(glm::mat3(camera.GetViewMatrix()));
+//        pers=glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 1000.0f);
+//        glUniform1i(glGetUniformLocation(easyShader.ID,"skybox"),6);
+//        glUniformMatrix4fv(glGetUniformLocation(easyShader.ID,"model"),1,GL_FALSE,glm::value_ptr(model));
+//        glUniformMatrix4fv(glGetUniformLocation(easyShader.ID,"view"),1,GL_FALSE,glm::value_ptr(view));
+//        glUniformMatrix4fv(glGetUniformLocation(easyShader.ID,"pers"),1,GL_FALSE,glm::value_ptr(pers));
+//        glBindVertexArray(lightVAO);
+//        glDrawArrays(GL_TRIANGLES, 0, 36);
         
         
-        glUniform1i(glGetUniformLocation(pbrShader.ID,"roughnessMap"),0);
-        glUniform1i(glGetUniformLocation(pbrShader.ID,"normalMap"),1);
-        glUniform1i(glGetUniformLocation(pbrShader.ID,"albedoMap"),2);
-        glUniform1i(glGetUniformLocation(pbrShader.ID,"metallicMap"),3);
-        glUniform1i(glGetUniformLocation(pbrShader.ID,"skybox"),6);
-        glUniform3fv(glGetUniformLocation(pbrShader.ID,"camPos"),1,&camera.Position[0]);
-        glUniformMatrix4fv(glGetUniformLocation(pbrShader.ID,"model"),1,GL_FALSE,glm::value_ptr(model));
         
-//        for (int i=0; i<4; i++) {
-        int i=0;
-        {
-            glm::vec3 newPos=lightPositions[i]+glm::vec3(sin(glfwGetTime()*5.0f)*5.0f,0.0,0.0);
-            glUniform3fv(glGetUniformLocation(pbrShader.ID,("lightPositions["+std::to_string(i)+"]").c_str()),1,&newPos[0]);
-            glUniform3fv(glGetUniformLocation(pbrShader.ID,("lightColors["+std::to_string(i)+"]").c_str()),1,&lightColors[i][0]);
-            
-            matModel=glm::translate(matModel, glm::vec3(0,0,2.0));
-//            matModel=glm::scale(matModel, glm::vec3(0.5));
-            glUniformMatrix4fv(glGetUniformLocation(pbrShader.ID,"matModel"),1,GL_FALSE,glm::value_ptr(matModel));
-            
-            glDrawArrays(GL_TRIANGLES, 0, vertices.size());
-        }
         
-        glActiveTexture(GL_TEXTURE6);
-        glBindTexture(GL_TEXTURE_CUBE_MAP, envCubemap);
-        easyShader.use();
-        model=glm::mat4(1.0f);
-        model=glm::scale(model, glm::vec3(10.0));
-        view=glm::mat4(glm::mat3(camera.GetViewMatrix()));
-        pers=glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 1000.0f);
-        glUniform1i(glGetUniformLocation(easyShader.ID,"skybox"),6);
-        glUniformMatrix4fv(glGetUniformLocation(easyShader.ID,"model"),1,GL_FALSE,glm::value_ptr(model));
-        glUniformMatrix4fv(glGetUniformLocation(easyShader.ID,"view"),1,GL_FALSE,glm::value_ptr(view));
-        glUniformMatrix4fv(glGetUniformLocation(easyShader.ID,"pers"),1,GL_FALSE,glm::value_ptr(pers));
-        glBindVertexArray(lightVAO);
-        glDrawArrays(GL_TRIANGLES, 0, 36);
+        
+        
+        
+        
+        
+        
+        
+        
+        
 //        glUniform1i(glGetUniformLocation(pbrShader.ID,"aoMap"),4);
         
         
