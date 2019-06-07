@@ -479,16 +479,6 @@ int main()
     };
     textureID=generateCubeTex(faces);
     
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, texture[0]);
-    glActiveTexture(GL_TEXTURE1);
-    glBindTexture(GL_TEXTURE_2D, texture[1]);
-    glActiveTexture(GL_TEXTURE2);
-    glBindTexture(GL_TEXTURE_2D, texture[2]);
-    glActiveTexture(GL_TEXTURE6);
-    glBindTexture(GL_TEXTURE_2D, textureSphere);
-    
-    
     unsigned int captureFBO,captureRBO;
     glGenFramebuffers(1,&captureFBO);
     glGenFramebuffers(1,&captureRBO);
@@ -526,10 +516,10 @@ int main()
     glBindFramebuffer(GL_FRAMEBUFFER,captureFBO);
     
     equToCubeShader.use();
-    glActiveTexture(GL_TEXTURE6);
+    glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, textureSphere);
     glUniformMatrix4fv(glGetUniformLocation(equToCubeShader.ID,"pers"),1,GL_FALSE,glm::value_ptr(captureProjection));
-    glUniform1i(glGetUniformLocation(equToCubeShader.ID,"skybox"),6);
+    glUniform1i(glGetUniformLocation(equToCubeShader.ID,"skybox"),0);
     glBindVertexArray(lightVAO);
     for (int i=0; i<6; i++) {
         glUniformMatrix4fv(glGetUniformLocation(equToCubeShader.ID,"view"),1,GL_FALSE,glm::value_ptr(captureViews[i]));
@@ -538,13 +528,16 @@ int main()
         glDrawArrays(GL_TRIANGLES, 0, 36);
     }
     glBindFramebuffer(GL_FRAMEBUFFER,0);
+    
+    glBindTexture(GL_TEXTURE_CUBE_MAP, envCubemap);
+    glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
 
 
     unsigned int irrMap;
     glGenTextures(1, &irrMap);
     glBindTexture(GL_TEXTURE_CUBE_MAP, irrMap);
     for (int i=0; i<6; i++) {
-        glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X+i, 0, GL_RGB16F, 32 , 32, 0, GL_RGB, GL_FLOAT, NULL);
+        glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB16F, 32, 32, 0, GL_RGB, GL_FLOAT, nullptr);
     }
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -553,16 +546,16 @@ int main()
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
 
-//    glViewport(0, 0, 512, 512);
+    glViewport(0, 0, 32, 32);
     glBindFramebuffer(GL_FRAMEBUFFER,captureFBO);
     glBindRenderbuffer(GL_RENDERBUFFER,captureRBO);
     glRenderbufferStorage(GL_RENDERBUFFER,GL_DEPTH_COMPONENT24,32,32);
 
     irrShader.use();
-    glActiveTexture(GL_TEXTURE6);
-    glBindTexture(GL_TEXTURE_CUBE_MAP, envCubemap);
     glUniformMatrix4fv(glGetUniformLocation(irrShader.ID,"pers"),1,GL_FALSE,glm::value_ptr(captureProjection));
-    glUniform1i(glGetUniformLocation(irrShader.ID,"skybox"),6);
+    glUniform1i(glGetUniformLocation(irrShader.ID,"skybox"),1);
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, envCubemap);
     glBindVertexArray(lightVAO);
     for (int i=0; i<6; i++) {
         glUniformMatrix4fv(glGetUniformLocation(irrShader.ID,"view"),1,GL_FALSE,glm::value_ptr(captureViews[i]));
@@ -588,9 +581,9 @@ int main()
     glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
     
     prefilterShader.use();
-    glActiveTexture(GL_TEXTURE6);
+    glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_CUBE_MAP, envCubemap);
-    glUniform1i(glGetUniformLocation(prefilterShader.ID,"environmentMap"),6);
+    glUniform1i(glGetUniformLocation(prefilterShader.ID,"environmentMap"),0);
     glUniformMatrix4fv(glGetUniformLocation(prefilterShader.ID,"pers"),1,GL_FALSE,glm::value_ptr(captureProjection));
     
     glBindFramebuffer(GL_FRAMEBUFFER,captureFBO);
@@ -659,8 +652,18 @@ int main()
     float roughness=0.1;
     float ao=1.0;
     
-    glm::vec3 lightPositions[4]={glm::vec3(0.0f,0.0f,20.0f)};
-    glm::vec3 lightColors[4]={glm::vec3(150.0f,150.0f,150.0f)};
+    glm::vec3 lightPositions[] = {
+        glm::vec3(-10.0f,  10.0f, 10.0f),
+        glm::vec3( 10.0f,  10.0f, 10.0f),
+        glm::vec3(-10.0f, -10.0f, 10.0f),
+        glm::vec3( 10.0f, -10.0f, 10.0f),
+    };
+    glm::vec3 lightColors[] = {
+        glm::vec3(300.0f, 300.0f, 300.0f),
+        glm::vec3(300.0f, 300.0f, 300.0f),
+        glm::vec3(300.0f, 300.0f, 300.0f),
+        glm::vec3(300.0f, 300.0f, 300.0f)
+    };
     glm::mat4 matModel=glm::mat4(1.0f);
     
     glViewport(0, 0, SCR_WIDTH*2, SCR_HEIGHT*2);
@@ -678,45 +681,57 @@ int main()
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glClearColor(0.0f, 0.10f, 0.0f, 1.0f);
         
-        planeShader.use();
-        glActiveTexture(GL_TEXTURE6);
-        glBindTexture(GL_TEXTURE_2D, brdfLUTTexture);
-        glUniform1i(glGetUniformLocation(planeShader.ID,"brdf"),6);
-        glBindVertexArray(planeVAO);
-        glDrawArrays(GL_TRIANGLES, 0,6);
-        
-//        for (int i=0; i<4; i++) {
-//            glActiveTexture(GL_TEXTURE0+i);
-//            glBindTexture(GL_TEXTURE_2D, pbrTextures[i]);
-//        }
-//
+//        planeShader.use();
 //        glActiveTexture(GL_TEXTURE6);
-//        glBindTexture(GL_TEXTURE_CUBE_MAP, envCubemap);
+//        glBindTexture(GL_TEXTURE_2D, brdfLUTTexture);
+//        glUniform1i(glGetUniformLocation(planeShader.ID,"brdf"),6);
+//        glBindVertexArray(planeVAO);
+//        glDrawArrays(GL_TRIANGLES, 0,6);
+        
+        for (int i=0; i<4; i++) {
+            glActiveTexture(GL_TEXTURE0+i);
+            glBindTexture(GL_TEXTURE_2D, pbrTextures[i]);
+        }
+
+        glActiveTexture(GL_TEXTURE6);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, envCubemap);
+        glActiveTexture(GL_TEXTURE7);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, irrMap);
+        glActiveTexture(GL_TEXTURE8);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, prefilterMap);
+        glActiveTexture(GL_TEXTURE9);
+        glBindTexture(GL_TEXTURE_2D, brdfLUTTexture);
+        matModel=glm::mat4(1.0f);
+        model=glm::mat4(1.0);
+        view=camera.GetViewMatrix();
+        pers=glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 1000.0f);
+
+        pbrShader.use();
+        for (int i=0; i<4; i++) {
+            
+            glm::vec3 newPos = lightPositions[i] + glm::vec3(sin(glfwGetTime() * 5.0) * 5.0, 0.0, 0.0);
+            glUniform3fv(glGetUniformLocation(pbrShader.ID,("lightPositions["+std::to_string(i)+"]").c_str()),1,&newPos[0]);
+            glUniform3fv(glGetUniformLocation(pbrShader.ID,("lightColors["+std::to_string(i)+"]").c_str()),1,&lightColors[i][0]);
+        }
+
+        glUniformMatrix4fv(glGetUniformLocation(pbrShader.ID,"view"),1,GL_FALSE,glm::value_ptr(view));
+        glUniformMatrix4fv(glGetUniformLocation(pbrShader.ID,"pers"),1,GL_FALSE,glm::value_ptr(pers));
 //
-//        matModel=glm::mat4(1.0f);
-//        model=glm::mat4(1.0);
-//        view=camera.GetViewMatrix();
-//        pers=glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 1000.0f);
 //
-//        pbrShader.use();
-//        glBindVertexArray(modelVAO);
-////        for (int i=0; i<4; i++) {
-////            glUniform3fv(glGetUniformLocation(pbrShader.ID,("lightPositions["+std::to_string(i)+"]").c_str()),1,&lightPositions[i][0]);
-////            glUniform3fv(glGetUniformLocation(pbrShader.ID,("lightColors["+std::to_string(i)+"]").c_str()),1,&lightColors[i][0]);
-////        }
-////
-//        glUniformMatrix4fv(glGetUniformLocation(pbrShader.ID,"view"),1,GL_FALSE,glm::value_ptr(view));
-//        glUniformMatrix4fv(glGetUniformLocation(pbrShader.ID,"pers"),1,GL_FALSE,glm::value_ptr(pers));
-//
-//
-//        glUniform1i(glGetUniformLocation(pbrShader.ID,"roughnessMap"),0);
-//        glUniform1i(glGetUniformLocation(pbrShader.ID,"normalMap"),1);
-//        glUniform1i(glGetUniformLocation(pbrShader.ID,"albedoMap"),2);
-//        glUniform1i(glGetUniformLocation(pbrShader.ID,"metallicMap"),3);
-//        glUniform1i(glGetUniformLocation(pbrShader.ID,"skybox"),6);
-//        glUniform3fv(glGetUniformLocation(pbrShader.ID,"camPos"),1,&camera.Position[0]);
-//        glUniformMatrix4fv(glGetUniformLocation(pbrShader.ID,"model"),1,GL_FALSE,glm::value_ptr(model));
-//
+        glUniform1i(glGetUniformLocation(pbrShader.ID,"roughnessMap"),0);
+        glUniform1i(glGetUniformLocation(pbrShader.ID,"normalMap"),1);
+        glUniform1i(glGetUniformLocation(pbrShader.ID,"albedoMap"),2);
+        glUniform1i(glGetUniformLocation(pbrShader.ID,"metallicMap"),3);
+        glUniform1i(glGetUniformLocation(pbrShader.ID,"irradianceMap"),7);
+        glUniform1i(glGetUniformLocation(pbrShader.ID,"prefilterMap"),8);
+        glUniform1i(glGetUniformLocation(pbrShader.ID,"brdfLUT"),9);
+
+        glUniform3fv(glGetUniformLocation(pbrShader.ID,"camPos"),1,&camera.Position[0]);
+        glUniformMatrix4fv(glGetUniformLocation(pbrShader.ID,"model"),1,GL_FALSE,glm::value_ptr(model));
+
+        glBindVertexArray(modelVAO);
+        glDrawArrays(GL_TRIANGLES, 0, vertices.size());
+
 ////        for (int i=0; i<4; i++) {
 //        int i=0;
 //        {
@@ -730,20 +745,18 @@ int main()
 //
 //            glDrawArrays(GL_TRIANGLES, 0, vertices.size());
 //        }
-//
-//        glActiveTexture(GL_TEXTURE6);
-//        glBindTexture(GL_TEXTURE_CUBE_MAP, envCubemap);
-//        easyShader.use();
-//        model=glm::mat4(1.0f);
-//        model=glm::scale(model, glm::vec3(10.0));
-//        view=glm::mat4(glm::mat3(camera.GetViewMatrix()));
-//        pers=glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 1000.0f);
-//        glUniform1i(glGetUniformLocation(easyShader.ID,"skybox"),6);
-//        glUniformMatrix4fv(glGetUniformLocation(easyShader.ID,"model"),1,GL_FALSE,glm::value_ptr(model));
-//        glUniformMatrix4fv(glGetUniformLocation(easyShader.ID,"view"),1,GL_FALSE,glm::value_ptr(view));
-//        glUniformMatrix4fv(glGetUniformLocation(easyShader.ID,"pers"),1,GL_FALSE,glm::value_ptr(pers));
-//        glBindVertexArray(lightVAO);
-//        glDrawArrays(GL_TRIANGLES, 0, 36);
+
+        easyShader.use();
+        model=glm::mat4(1.0f);
+        model=glm::scale(model, glm::vec3(10.0));
+        view=glm::mat4(glm::mat3(camera.GetViewMatrix()));
+        pers=glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 1000.0f);
+        glUniform1i(glGetUniformLocation(easyShader.ID,"skybox"),6);
+        glUniformMatrix4fv(glGetUniformLocation(easyShader.ID,"model"),1,GL_FALSE,glm::value_ptr(model));
+        glUniformMatrix4fv(glGetUniformLocation(easyShader.ID,"view"),1,GL_FALSE,glm::value_ptr(view));
+        glUniformMatrix4fv(glGetUniformLocation(easyShader.ID,"pers"),1,GL_FALSE,glm::value_ptr(pers));
+        glBindVertexArray(lightVAO);
+        glDrawArrays(GL_TRIANGLES, 0, 36);
         
         
         

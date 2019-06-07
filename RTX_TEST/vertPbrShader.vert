@@ -17,6 +17,6 @@ void main(){
     TexCoords=aTex;
 //    WorldPos=vec3(model*vec4(aPos,1.0));
     WorldPos=vec3(model*vec4(aPos,1.0));
-    Normal=aNormal;
-    gl_Position=pers * view * matModel * vec4(aPos,1.0f);
+    Normal=mat3(model)*aNormal;
+    gl_Position=pers * view * model * vec4(aPos,1.0f);
 }

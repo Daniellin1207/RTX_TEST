@@ -10,7 +10,7 @@ void main(){
     
     vec3 up=vec3(0,1,0);
     vec3 right=cross(up,normal);
-    vec3 N=cross(normal,right);
+    up=cross(normal,right);
     
     float sampleDelta=0.025;
     float nrSamples=0.0;

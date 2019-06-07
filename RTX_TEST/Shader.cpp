@@ -169,7 +169,7 @@ void Shader::createShader(const char* vertCode,const char* geoCode,const char* f
         glGetShaderInfoLog(fragment,1024,NULL,infoLog);
         cout<<"ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" << infoLog << endl;
         cout<<path<<endl;
-    }
+    } 
     
     ID=glCreateProgram();
     glAttachShader(ID,vertex);
